@@ -9,9 +9,11 @@ class Program
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-        DataLoader dataLoader = new ExcelDataLoader("/common/study");
+        IDataLoader dataLoader = new ExcelDataLoader("/common/study", new JsonConvertor());
         dataLoader.Init();
         dataLoader.Load();
-        System.Console.WriteLine("Hello World !");
+        dataLoader.Convert();
+
+        System.Console.WriteLine("Sucess");
     }
 }

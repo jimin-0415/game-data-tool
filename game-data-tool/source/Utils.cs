@@ -87,6 +87,11 @@ public static class Utils
 
         return String.Concat(target.Where(t => !Char.IsWhiteSpace(t)));
     }
+
+    public static string ToJsonKey(string name)
+    {
+        return "\"" + name + "\":";
+    }
 }
 
 

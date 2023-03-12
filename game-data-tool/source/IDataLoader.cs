@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-interface DataLoader
+interface IDataLoader
 {
     public void Init();
     public void Load();
+    public void Convert();
 }
 

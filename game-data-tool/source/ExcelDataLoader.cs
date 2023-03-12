@@ -9,28 +9,31 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using ExcelDataReader;
 
-class ExcelDataLoader : DataLoader
+class ExcelDataLoader : IDataLoader
 {
     string directoryPath;
     Stopwatch timer;
 
-    // key : columIndex, columInfo
-    Dictionary<int, ColumnInfo> columnInfos;
+    // key : sheetName, key : columIndex, columInfo
+    Dictionary<string, Dictionary<int, ColumnInfo>> columnInfosMap;
 
-    // key : Row Index, datas
-    Dictionary<int, List<string>> rowDatasMap;
-    
-    public ExcelDataLoader(string path)
+    // key : sheetName, key : Row Index, datas
+    Dictionary<string, Dictionary<int, List<string>>> rowDatasMap;
+
+    IConvertor convertor;
+
+    public ExcelDataLoader(string path, IConvertor convertor)
     {
         this.directoryPath = path;
-        this.columnInfos = new Dictionary<int, ColumnInfo>();
-        this.rowDatasMap = new Dictionary<int, List<string>>();
+
+        this.columnInfosMap = new Dictionary<string, Dictionary<int, ColumnInfo>>();
+        this.rowDatasMap = new Dictionary<string, Dictionary<int, List<string>>>();
         this.timer = new Stopwatch();
+        this.convertor = convertor;
     }
 
     public virtual void Init()
     {
-
     }
 
     private static List<string> GetTablenames(DataTableCollection tables)
@@ -64,7 +67,7 @@ class ExcelDataLoader : DataLoader
             UseColumnDataType = false,
         });
 
-        //컬럼 정보를 초기화 한다 
+        //컬럼 정보를 초기화 한다
         if(!_InitColumInfo(dataSet.Tables))
         {
             System.Console.WriteLine("Fail InitColumInfo");
@@ -76,15 +79,24 @@ class ExcelDataLoader : DataLoader
             System.Console.WriteLine("Fail InitRowsData");
         }
 
-        List<string> talbeNames = GetTablenames(dataSet.Tables);
-
-
-
-
-        /*        if (tablenames.Count > 0)
-                    sheetCombo.SelectedIndex = 0;*/
-
         timer.Stop();
+    }
+
+    /// 다른 데이터 형식으로 변환 시킨다 
+    public virtual void Convert()
+    {
+        foreach(var colunmInfo in columnInfosMap)
+        {
+            string key = colunmInfo.Key;
+
+            if (!rowDatasMap.ContainsKey(key))
+            {
+                System.Console.WriteLine("Key의 정보가 매칭도지 않습니다");
+                return;
+            }
+
+            convertor.Convert(key, colunmInfo.Value, rowDatasMap[key]);
+        }
     }
 
     /// 컬럼의 정보를 초기화 합니다 
@@ -98,12 +110,19 @@ class ExcelDataLoader : DataLoader
             if (dataTable.Rows.Count < (int)EExcelRowType.Max)
                 continue;
 
-            for (int i = 0; i < dataTable.Rows.Count; i++)
-            {
-                //Row 개수를 넘어갈 경우 ColumInfo 초기화 완료
-                if (i > (int)EExcelRowType.Max)
-                    return true;
+            String tableName = _GetTableName(dataTable);
+            if (tableName.Equals(String.Empty))
+                continue;
 
+            if (!columnInfosMap.ContainsKey(tableName))
+            {
+                columnInfosMap.Add(tableName, new Dictionary<int, ColumnInfo>());
+            }
+
+            Dictionary<int, ColumnInfo> columnInfos = columnInfosMap[tableName];
+
+            for (int i = 0; i < (int)EExcelRowType.Max; i++)
+            {
                 EExcelRowType excelRowType = (EExcelRowType)i;
 
                 DataRow dataRow = dataTable.Rows[i];
@@ -140,9 +159,10 @@ class ExcelDataLoader : DataLoader
             }
         }
 
-        return false;
+        return true;
     }
 
+    /// Init Row Datas
     private bool _InitRowsData(DataTableCollection dataTables)
     {
         if (dataTables == null)
@@ -153,6 +173,17 @@ class ExcelDataLoader : DataLoader
             if (dataTable.Rows.Count < (int)EExcelRowType.Max)
                 continue;
 
+            String tableName = _GetTableName(dataTable);
+            if (tableName.Equals(String.Empty))
+                continue;
+
+            if (!rowDatasMap.ContainsKey(tableName))
+            {
+                rowDatasMap.Add(tableName, new Dictionary<int, List<string>>());
+            }
+
+            Dictionary<int, List<String>> rowDatas = rowDatasMap[tableName];
+
             for (int i = 0; i < dataTable.Rows.Count; i++)
             {
                 //Row 의 개수가 Max 넘어가는 시점부터 Data Load
@@ -162,16 +193,27 @@ class ExcelDataLoader : DataLoader
                 DataRow dataRow = dataTable.Rows[i];
                 for (int j = 0; j < dataRow.ItemArray.Length; j++)
                 {
-                    if (!rowDatasMap.ContainsKey(i))
+                    if (!rowDatas.ContainsKey(i))
                     {
-                        rowDatasMap.Add(i, new List<string>());
+                        rowDatas.Add(i, new List<string>());
                     }
 
-                    List<string> dataList = rowDatasMap[i];
+                    List<string> dataList = rowDatas[i];
                     dataList.Add(dataRow[j]?.ToString() ?? String.Empty);
                 }
             }
         }
+
         return true;
     }
+
+    /// Read Table Name
+    private string _GetTableName(DataTable dataTable)
+    {
+        if (dataTable == null)
+            return String.Empty;
+
+        return dataTable.TableName;
+    }
+
 }
