@@ -39,7 +39,7 @@ class ExcelDataLoader : DataLoader
     {
         timer.Reset();
 
-        string filePath = "C:\\Users\\programmer\\Desktop\\git\\pl\\game-data-tool\\logSheet.xlsx";
+        string filePath = "../../../../logSheet.xlsx";
 
         var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
