@@ -11,7 +11,9 @@ using ExcelDataReader;
 
 class ExcelDataLoader : IDataLoader
 {
-    string directoryPath;
+    //Conver Data Path
+    string dataPath;
+
     Stopwatch timer;
 
     // key : sheetName, key : columIndex, columInfo
@@ -20,20 +22,31 @@ class ExcelDataLoader : IDataLoader
     // key : sheetName, key : Row Index, datas
     Dictionary<string, Dictionary<int, List<string>>> rowDatasMap;
 
-    IConvertor convertor;
+    // Convertor
+    List<IConvertor> convertors;
 
-    public ExcelDataLoader(string path, IConvertor convertor)
+    List<string> fileFullPath;
+
+    public ExcelDataLoader(string dataPath, IConvertor convertor = null, IConvertor convertor2 = null)
     {
-        this.directoryPath = path;
+        this.dataPath = dataPath;
 
         this.columnInfosMap = new Dictionary<string, Dictionary<int, ColumnInfo>>();
         this.rowDatasMap = new Dictionary<string, Dictionary<int, List<string>>>();
         this.timer = new Stopwatch();
-        this.convertor = convertor;
+
+        convertors = new List<IConvertor>();
+
+        if (convertor != null)
+            convertors.Add(convertor);
+
+        if (convertor2 != null)
+            convertors.Add(convertor2);
     }
 
     public virtual void Init()
     {
+        fileFullPath = Directory.GetFiles(dataPath, "*.xlsx", SearchOption.AllDirectories).ToList();
     }
 
     private static List<string> GetTablenames(DataTableCollection tables)
@@ -51,32 +64,33 @@ class ExcelDataLoader : IDataLoader
     {
         timer.Reset();
 
-        string filePath = "../../../../logSheet.xlsx";
-
-        var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
         timer.Start();
 
-        using IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream);
-        var openTining = timer.ElapsedMilliseconds;
-
-        DataSet dataSet;
-        // reader.IsFirstRowAsColumnNames = firstRowNamesCheckBox.Checked;
-        dataSet = reader.AsDataSet(new ExcelDataSetConfiguration()
+        foreach (var filePath in fileFullPath)
         {
-            UseColumnDataType = false,
-        });
+            var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-        //컬럼 정보를 초기화 한다
-        if(!_InitColumInfo(dataSet.Tables))
-        {
-            System.Console.WriteLine("Fail InitColumInfo");
-        }
+            using IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream);
+            var openTining = timer.ElapsedMilliseconds;
 
-        //데이터 정보를 초기화 한다
-        if (!_InitRowsData(dataSet.Tables))
-        {
-            System.Console.WriteLine("Fail InitRowsData");
+            DataSet dataSet;
+            // reader.IsFirstRowAsColumnNames = firstRowNamesCheckBox.Checked;
+            dataSet = reader.AsDataSet(new ExcelDataSetConfiguration()
+            {
+                UseColumnDataType = false,
+            });
+
+            //컬럼 정보를 초기화 한다
+            if (!_InitColumInfo(dataSet.Tables))
+            {
+                System.Console.WriteLine("Fail InitColumInfo");
+            }
+
+            //데이터 정보를 초기화 한다
+            if (!_InitRowsData(dataSet.Tables))
+            {
+                System.Console.WriteLine("Fail InitRowsData");
+            }
         }
 
         timer.Stop();
@@ -94,8 +108,10 @@ class ExcelDataLoader : IDataLoader
                 System.Console.WriteLine("Key의 정보가 매칭도지 않습니다");
                 return;
             }
-
-            convertor.Convert(key, colunmInfo.Value, rowDatasMap[key]);
+            foreach(var convertor in convertors)
+            {
+                convertor.Convert(key, colunmInfo.Value, rowDatasMap[key]);
+            }
         }
     }
 

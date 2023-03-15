@@ -12,13 +12,13 @@ class JsonConvertor : IConvertor
 
     public JsonConvertor()
     {
-
+        this.path = "../../projectpl-client/ProjectPL/Assets/Resources/Data/";
     }
 
     public JsonConvertor(string filePath)
     {
         this.path = filePath;
-        this.path = "../";
+        this.path = "../../";
     }
 
     public void Convert(string sheetName, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)

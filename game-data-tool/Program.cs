@@ -9,7 +9,9 @@ class Program
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-        IDataLoader dataLoader = new ExcelDataLoader("/common/study", new JsonConvertor());
+        string folderName = "Data";
+
+        IDataLoader dataLoader = new ExcelDataLoader("../Data", new JsonConvertor(), new ScriptConvertor());
         dataLoader.Init();
         dataLoader.Load();
         dataLoader.Convert();

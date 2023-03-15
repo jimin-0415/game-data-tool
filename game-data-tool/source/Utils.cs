@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 public static class Utils
 {
@@ -78,6 +79,46 @@ public static class Utils
             default:
                 return EDataType.None;
         }
+    }
+
+    public static string ConvertDataTypeToString(EDataType dataType)
+    { 
+        switch (dataType)
+        {
+            case EDataType.Bool:
+                return "bool";
+            case EDataType.Byte:
+                return "byte";
+            case EDataType.SByte:
+                return "sbyte";
+            case EDataType.Short:
+                return "short";
+            case EDataType.Int:
+                return "int";
+            case EDataType.Long:
+                return "long";
+            case EDataType.UShort:
+                return "ushort"; 
+            case EDataType.UInt:
+                return "uint"; 
+            case EDataType.ULong:
+                return "ulong";
+            case EDataType.Float:
+                return "float";
+            case EDataType.Double:
+                return "double";
+            case EDataType.Decimal:
+                return "decimal"; 
+            case EDataType.Char:
+                return "char";
+            case EDataType.String:
+                return "string";
+            case EDataType.DateTime:
+                return "DateTime";
+            case EDataType.Object:
+                return "object";
+        }
+        return "string";
     }
 
     public static string RemoveWhiteSpace(string target)
