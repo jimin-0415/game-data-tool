@@ -16,6 +16,9 @@ class ExcelDataLoader : IDataLoader
 
     Stopwatch timer;
 
+    // key : rootName, value : List<sheetName>
+    Dictionary<string, List<string>> rootNamesMap;
+
     // key : sheetName, key : columIndex, columInfo
     Dictionary<string, Dictionary<int, ColumnInfo>> columnInfosMap;
 
@@ -25,7 +28,11 @@ class ExcelDataLoader : IDataLoader
     // Convertor
     List<IConvertor> convertors;
 
+    // 파일 전체 경로
     List<string> fileFullPath;
+
+    //현재 루트 이름
+    string curRootName;
 
     public ExcelDataLoader(string dataPath, IConvertor convertor = null, IConvertor convertor2 = null)
     {
@@ -33,6 +40,7 @@ class ExcelDataLoader : IDataLoader
 
         this.columnInfosMap = new Dictionary<string, Dictionary<int, ColumnInfo>>();
         this.rowDatasMap = new Dictionary<string, Dictionary<int, List<string>>>();
+        this.rootNamesMap = new Dictionary<string, List<string>>();
         this.timer = new Stopwatch();
 
         convertors = new List<IConvertor>();
@@ -68,13 +76,16 @@ class ExcelDataLoader : IDataLoader
 
         foreach (var filePath in fileFullPath)
         {
+            string temp = filePath.Replace(dataPath + "\\", "");
+            curRootName = temp.Replace(".xls", "");
+
             var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
             using IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream);
             var openTining = timer.ElapsedMilliseconds;
 
             DataSet dataSet;
-            // reader.IsFirstRowAsColumnNames = firstRowNamesCheckBox.Checked;
+           
             dataSet = reader.AsDataSet(new ExcelDataSetConfiguration()
             {
                 UseColumnDataType = false,
@@ -99,6 +110,9 @@ class ExcelDataLoader : IDataLoader
     /// 다른 데이터 형식으로 변환 시킨다 
     public virtual void Convert()
     {
+        ManagerScriptConvertor msc = new ManagerScriptConvertor();
+        msc.Convert(rootNamesMap);
+
         foreach(var colunmInfo in columnInfosMap)
         {
             string key = colunmInfo.Key;
@@ -130,6 +144,11 @@ class ExcelDataLoader : IDataLoader
             if (tableName.Equals(String.Empty))
                 continue;
 
+            if (!rootNamesMap.ContainsKey(curRootName))
+                rootNamesMap.Add(curRootName, new List<string>());
+
+            rootNamesMap[curRootName].Add(tableName);
+            
             if (!columnInfosMap.ContainsKey(tableName))
             {
                 columnInfosMap.Add(tableName, new Dictionary<int, ColumnInfo>());
