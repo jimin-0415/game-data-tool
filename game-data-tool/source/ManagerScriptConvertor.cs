@@ -14,14 +14,37 @@ public class ManagerScriptConvertor : IConvertor
     // key : rootName, value : List<sheetName>
     public void Convert(Dictionary<string, List<string>> rootNamesMap)
     {
-        StringBuilder builder = new StringBuilder(1000, 50000);
+        foreach ( var sheetList  in rootNamesMap)
+        {
+            StringBuilder builder = new StringBuilder(1000, 50000);
 
-        builder.AppendLine("using UnityEngine;");
-        builder.AppendLine(" ");
-        builder.AppendLine(" ");
-        //builder.AppendLine("public class " + sheetName + "Data");
-        builder.AppendLine("{");
+            string managerName = sheetList.Key;
 
+            builder.AppendLine("using System;");
+            builder.AppendLine("using System.Collections.Generic;");
+            builder.AppendLine("using System.Linq;");
+            builder.AppendLine("using System.Text;");
+            builder.AppendLine("using System.Threading.Tasks;");
+            builder.AppendLine("");
+            builder.AppendLine("");
+            builder.AppendLine("public partial class " + managerName + "Manager : AbstractDataManager");
+            builder.AppendLine("{");
+
+            foreach(var sheetName in sheetList.Value)
+            {
+                string sheetDataName = sheetName + "Data";
+                builder.AppendLine("    //Key : key, Value : " + sheetDataName);
+                builder.AppendLine("    private Dictionary<int, " + sheetDataName + "> " + sheetDataName + "Map = new Dictionary<int, " + sheetDataName + ">();");
+                builder.AppendLine("    ");
+                builder.AppendLine("    public override void Load()");
+                builder.AppendLine("    {");
+
+                builder.AppendLine("    }");
+            }
+
+
+            builder.AppendLine("}");    
+        }
     }
 }
 

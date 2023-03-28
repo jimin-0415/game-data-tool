@@ -19,7 +19,13 @@ class ScriptConvertor : IConvertor
         this.path = "../../";
     }
 
-    public void Convert(string sheetName, Dictionary<string, string> rootNameMap, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
+    public void Convert(string sheetName, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
+    {
+        _ConvertData(sheetName, columnInfos, rowDatas);
+    }
+
+        
+    private void _ConvertData(string sheetName, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
     {
         if (columnInfos.Count <= 0 || rowDatas.Count <= 0)
         {
@@ -36,20 +42,15 @@ class ScriptConvertor : IConvertor
         builder.AppendLine("{");
 
         {
-            foreach(var column in columnInfos)
+            foreach (var column in columnInfos)
                 builder.AppendLine(_ConvertMemberValue(column.Value));
         }
-        
+
         builder.Append("}");
 
         string fullFilePath = this.path + sheetName + "Data" + ".cs";
 
         File.WriteAllText(fullFilePath, builder.ToString());
-    }
-
-    private void _ConvertData(string sheetName, Dictionary<string, string> rootNameMap, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
-    {
-
     }
 
     private void _ConvertManager()
