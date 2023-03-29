@@ -38,12 +38,17 @@ class ScriptConvertor : IConvertor
         builder.AppendLine("using UnityEngine;");
         builder.AppendLine(" ");
         builder.AppendLine(" ");
+        builder.AppendLine("[System.Serializable]");
         builder.AppendLine("public class " + sheetName + "Data");
         builder.AppendLine("{");
 
         {
             foreach (var column in columnInfos)
+            {
+                builder.AppendLine("    /// <summary> " + column.Value.GetDesc() + " </summary> ");
                 builder.AppendLine(_ConvertMemberValue(column.Value));
+                builder.AppendLine("    ");
+            }
         }
 
         builder.Append("}");
@@ -63,3 +68,4 @@ class ScriptConvertor : IConvertor
         return "    " + "public " + Utils.ConvertDataTypeToString(columnInfo.GetDataType()) + " " + columnInfo.GetName() + ";";
     }
 }
+

@@ -9,13 +9,20 @@ class Program
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-        string folderName = "Data";
-
-        IDataLoader dataLoader = new ExcelDataLoader("../Data", new JsonConvertor(), new ScriptConvertor());
-        dataLoader.Init();
-        dataLoader.Load();
-        dataLoader.Convert();
+        try
+        {
+            IDataLoader dataLoader = new ExcelDataLoader("../Data", new JsonConvertor(), new ScriptConvertor());
+            dataLoader.Init();
+            dataLoader.Load();
+            dataLoader.Convert();
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            Console.ReadLine();
+        }
 
         System.Console.WriteLine("Sucess");
+        Console.ReadLine();
     }
 }

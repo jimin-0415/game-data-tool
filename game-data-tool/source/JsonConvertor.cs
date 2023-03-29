@@ -12,7 +12,7 @@ class JsonConvertor : IConvertor
 
     public JsonConvertor()
     {
-        this.path = "../../projectpl-client/ProjectPL/Assets/Resources/Data/";
+        this.path = "../../projectpl-client/ProjectPL/Assets/Resources/Data/Json/";
     }
 
     public JsonConvertor(string filePath)
@@ -30,7 +30,7 @@ class JsonConvertor : IConvertor
 
         builder.AppendLine("    " + Utils.ToJsonKey(sheetName) + " [");
 
-        string fullFilePath = this.path + sheetName + ".json";
+        string fullFilePath = this.path + sheetName + "Data" + ".json";
 
         if (columnInfos.Count <= 0 || rowDatas.Count <= 0)
         {
@@ -38,7 +38,8 @@ class JsonConvertor : IConvertor
             return;
         }
 
-        foreach(var rowData in rowDatas)
+        int count = 0;
+        foreach (var rowData in rowDatas)
         {
             int key = rowData.Key;
             List<string> datas = rowData.Value;
@@ -55,10 +56,27 @@ class JsonConvertor : IConvertor
             {
                 string varName = columnInfos[i].GetName();
                 builder.Append("            " + Utils.ToJsonKey(varName));
-                builder.AppendLine(datas[i] + ",");
-            }
 
-            builder.AppendLine("        },");
+                string data = datas[i];
+                switch (columnInfos[i].GetDataType())
+                {
+                    case EDataType.String:
+                        data = "\"" + data + "\"";
+                        break;
+                    default:
+                        break;
+                }
+
+                if (i == datas.Count - 1)
+                    builder.AppendLine(data);
+                else
+                    builder.AppendLine(data + ",");
+            }
+            
+            if(++count == rowDatas.Count)
+                builder.AppendLine("        }");
+            else 
+                builder.AppendLine("        },");
         }
 
         builder.AppendLine("    ]");

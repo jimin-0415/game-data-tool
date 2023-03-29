@@ -77,7 +77,7 @@ class ExcelDataLoader : IDataLoader
         foreach (var filePath in fileFullPath)
         {
             string temp = filePath.Replace(dataPath + "\\", "");
-            curRootName = temp.Replace(".xls", "");
+            curRootName = temp.Replace(".xlsx", "");
 
             var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 

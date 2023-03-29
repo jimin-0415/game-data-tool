@@ -19,6 +19,11 @@ public class ColumnInfo
 
     public void SetDesc(string desc)
     {
+        if (desc == null)
+        {
+            this.desc = " ";
+            return;
+        }
         this.desc = desc;
     }
 
