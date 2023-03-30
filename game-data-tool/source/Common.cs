@@ -58,6 +58,7 @@ public enum EDataType
     String,
     DateTime,
     Object,
+    Unique,
     Max,
 }
 

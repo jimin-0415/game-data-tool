@@ -28,7 +28,7 @@ class JsonConvertor : IConvertor
 
         Utils.ToJsonKey(sheetName);
 
-        builder.AppendLine("    " + Utils.ToJsonKey(sheetName) + " [");
+        builder.AppendLine("    " + Utils.ToJsonKey("Datas") + " [");
 
         string fullFilePath = this.path + sheetName + "Data" + ".json";
 

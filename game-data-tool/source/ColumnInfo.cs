@@ -6,6 +6,7 @@ public class ColumnInfo
     string referenceTableName;  //reference Table Name
     EDataLoadType dataLoadType; //data Load Type
     EDataType dataType;
+    string objectDataType;
     string name;
 
     public ColumnInfo()
@@ -15,6 +16,7 @@ public class ColumnInfo
         name = String.Empty;
         dataLoadType = EDataLoadType.Max;
         dataType = EDataType.Max;
+        objectDataType = String.Empty;
     }
 
     public void SetDesc(string desc)
@@ -57,19 +59,27 @@ public class ColumnInfo
         return dataLoadType;
     }
 
-    public void SetDataType(EDataType dataType)
-    {
-        this.dataType = dataType;
-    }
-
     public void SetDataType(string dataType)
     {
-        this.dataType = Utils.ConvertDataType(dataType);
+        if(Utils.ConvertDataType(dataType) == EDataType.Unique)
+        {
+            this.dataType = EDataType.Unique;
+            this.objectDataType = dataType;
+        }
+        else
+        {
+            this.dataType = Utils.ConvertDataType(dataType);
+        }
     }
 
     public EDataType GetDataType()
     {
         return this.dataType;
+    }
+
+    public string GetObjectDataType()
+    {
+        return this.objectDataType;
     }
 
     public void SetName(string name)

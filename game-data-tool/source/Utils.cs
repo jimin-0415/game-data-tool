@@ -77,11 +77,11 @@ public static class Utils
             case "OBJECT":
                 return EDataType.Object;
             default:
-                return EDataType.None;
+                return EDataType.Unique;
         }
     }
 
-    public static string ConvertDataTypeToString(EDataType dataType)
+    public static string ConvertDataTypeToString(EDataType dataType, string objectDataType = null)
     { 
         switch (dataType)
         {
@@ -117,8 +117,11 @@ public static class Utils
                 return "DateTime";
             case EDataType.Object:
                 return "object";
+            case EDataType.Unique:
+                return objectDataType;
+            default:
+                return string.Empty;
         }
-        return "string";
     }
 
     public static string RemoveWhiteSpace(string target)

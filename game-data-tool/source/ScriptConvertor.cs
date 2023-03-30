@@ -65,7 +65,7 @@ class ScriptConvertor : IConvertor
 
     private string _ConvertMemberValue(ColumnInfo columnInfo)
     {
-        return "    " + "public " + Utils.ConvertDataTypeToString(columnInfo.GetDataType()) + " " + columnInfo.GetName() + ";";
+        return "    " + "public " + Utils.ConvertDataTypeToString(columnInfo.GetDataType(), columnInfo.GetObjectDataType()) + " " + columnInfo.GetName() + ";";
     }
 }
 
