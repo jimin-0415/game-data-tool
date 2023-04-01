@@ -19,13 +19,32 @@ class ScriptConvertor : IConvertor
         this.path = "../../";
     }
 
-    public void Convert(string sheetName, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
+    public void Convert(string sheetName, Dictionary<string, List<string>> rootNamesMap, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
     {
-        _ConvertData(sheetName, columnInfos, rowDatas);
+        string rootName = string.Empty;
+        foreach(var rootNameEntry in rootNamesMap)
+        {
+            List<string> sheetNameList = rootNameEntry.Value;
+
+            foreach(string valus in sheetNameList)
+            {
+                if(valus == sheetName)
+                {
+                    rootName = rootNameEntry.Key;
+                }
+            }
+        }
+
+        if (String.IsNullOrEmpty(rootName))
+        {
+            System.Console.WriteLine("Faile Script Convert : [ Reason : RootName Is Null ]");
+        }
+        
+        _ConvertData(rootName, sheetName, columnInfos, rowDatas);
     }
 
         
-    private void _ConvertData(string sheetName, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
+    private void _ConvertData(string rootName, string sheetName, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
     {
         if (columnInfos.Count <= 0 || rowDatas.Count <= 0)
         {
@@ -33,6 +52,7 @@ class ScriptConvertor : IConvertor
             return;
         }
 
+        //Write Generate String
         StringBuilder builder = new StringBuilder(1000, 50000);
 
         builder.AppendLine("using UnityEngine;");
@@ -53,14 +73,16 @@ class ScriptConvertor : IConvertor
 
         builder.Append("}");
 
-        string fullFilePath = this.path + sheetName + "Data" + ".cs";
+        //폴더 있는지 유무 확인 후 생성
+        string directoryPath = this.path + "/Generate/" + rootName;
+        
+        DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
+        if (!directoryInfo.Exists)
+            directoryInfo.Create();
 
+        //파일 생성
+        string fullFilePath = directoryPath + "/" + sheetName + "Data" + ".cs";
         File.WriteAllText(fullFilePath, builder.ToString());
-    }
-
-    private void _ConvertManager()
-    {
-
     }
 
     private string _ConvertMemberValue(ColumnInfo columnInfo)

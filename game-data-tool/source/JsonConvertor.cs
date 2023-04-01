@@ -21,7 +21,7 @@ class JsonConvertor : IConvertor
         this.path = "../../";
     }
 
-    public void Convert(string sheetName, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
+    public void Convert(string sheetName, Dictionary<string, List<string>> rootNamesMap, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
     {
         StringBuilder builder = new StringBuilder(1000, 50000);
         builder.AppendLine("{");

@@ -122,9 +122,10 @@ class ExcelDataLoader : IDataLoader
                 System.Console.WriteLine("Key의 정보가 매칭도지 않습니다");
                 return;
             }
+
             foreach(var convertor in convertors)
             {
-                convertor.Convert(key, colunmInfo.Value, rowDatasMap[key]);
+                convertor.Convert(key, rootNamesMap, colunmInfo.Value, rowDatasMap[key]);
             }
         }
     }

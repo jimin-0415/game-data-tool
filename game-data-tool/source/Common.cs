@@ -62,3 +62,10 @@ public enum EDataType
     Max,
 }
 
+public enum ManagerClassType
+{
+    ExcelName,
+    AbstractClass,   
+    Max,
+}
+
