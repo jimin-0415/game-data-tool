@@ -156,9 +156,9 @@ public class ManagerScriptConvertor : IConvertor
                 builder.AppendLine("        List<" + sheetDataName + "> " + sheetDataName + "s = LoadJsonData<" + sheetDataName + ">(\"Data/Json/" + sheetDataName + "\");");
                 builder.AppendLine("        foreach (" + sheetDataName + " " + sheetDataName + " in " + sheetDataName + "s )");
                 builder.AppendLine("        {");
-                builder.AppendLine("            if(!" + mapContainerName + ".ContainsKey(" + sheetDataName + ".id))");
+                builder.AppendLine("            if(!" + mapContainerName + ".ContainsKey(" + sheetDataName + ".Id))");
                 builder.AppendLine("            {");
-                builder.AppendLine("                " + mapContainerName + ".Add(" + sheetDataName + ".id, " + sheetDataName + ");");
+                builder.AppendLine("                " + mapContainerName + ".Add(" + sheetDataName + ".Id, " + sheetDataName + ");");
                 builder.AppendLine("            }");
                 builder.AppendLine("        }");
                 builder.AppendLine("    ");

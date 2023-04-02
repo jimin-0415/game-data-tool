@@ -76,6 +76,8 @@ public static class Utils
                 return EDataType.DateTime;
             case "OBJECT":
                 return EDataType.Object;
+            case "DESC":
+                return EDataType.Desc;
             default:
                 return EDataType.Unique;
         }

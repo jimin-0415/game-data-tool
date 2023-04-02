@@ -65,9 +65,12 @@ class ScriptConvertor : IConvertor
         {
             foreach (var column in columnInfos)
             {
-                builder.AppendLine("    /// <summary> " + column.Value.GetDesc() + " </summary> ");
-                builder.AppendLine(_ConvertMemberValue(column.Value));
-                builder.AppendLine("    ");
+                if(column.Value.GetDataType() != EDataType.Desc)
+                {
+                    builder.AppendLine("    /// <summary> " + column.Value.GetDesc() + " </summary> ");
+                    builder.AppendLine(_ConvertMemberValue(column.Value));
+                    builder.AppendLine("    ");
+                }
             }
         }
 

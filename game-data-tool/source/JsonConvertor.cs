@@ -54,6 +54,10 @@ class JsonConvertor : IConvertor
 
             for (int i = 0; i < datas.Count; i++)
             {
+                //만약 DataType이 Desc 일 경우 무시하고 진행
+                if (columnInfos[i].GetDataType() == EDataType.Desc)
+                    continue;
+
                 string varName = columnInfos[i].GetName();
                 builder.Append("            " + Utils.ToJsonKey(varName));
 
