@@ -134,7 +134,7 @@ public class ManagerScriptConvertor : IConvertor
                 string mapContainerName = sheetDataName + "Map";
 
                 builder.AppendLine("    //Key : key, Value : " + sheetDataName);
-                builder.AppendLine("    private Dictionary<int, " + sheetDataName + "> " + mapContainerName + " = new Dictionary<int, " + sheetDataName + ">();");
+                builder.AppendLine("    public Dictionary<int, " + sheetDataName + "> " + mapContainerName + " = new Dictionary<int, " + sheetDataName + ">();");
                 builder.AppendLine("    ");
             }
         }
