@@ -7,17 +7,17 @@ class Program
 { 
     static void Main(string[] args)
     {
-        var pivot = new DateTime(2023, 7, 29);
+        /*var pivot = new DateTime(2024, 10, 29);
         var now = DateTime.Now;
 
-        if(DateTime.Compare(pivot, now) < 0)
-            return;
+         if(DateTime.Compare(pivot, now) < 0)
+            return;*/
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         try
         {
-            IDataLoader dataLoader = new ExcelDataLoader("../Data", new JsonConvertor(), new ScriptConvertor());
+            IDataLoader dataLoader = new ExcelDataLoader( "../Assets/Data/", new JsonConvertor(), new ScriptConvertor());
             dataLoader.Init();
             dataLoader.Load();
             dataLoader.Convert();

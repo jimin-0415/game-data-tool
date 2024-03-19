@@ -11,7 +11,7 @@ public class ManagerScriptConvertor : IConvertor
 
     public ManagerScriptConvertor()
     {
-        this.path = "../../projectpl-client/ProjectPL/Assets/Script/Data/Generate/";
+        this.path = "../Assets/Scripts/Manager/";
     }
 
     public void Convert(string sheetName, Dictionary<string, List<string>> rootNamesMap, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
@@ -63,7 +63,7 @@ public class ManagerScriptConvertor : IConvertor
                 string mapContainerName = sheetDataName + "Map";
 
                 builder.AppendLine("    //Key : key, Value : " + sheetDataName);
-                builder.AppendLine("    private Dictionary<int, " + sheetDataName + "> " + mapContainerName + " = new Dictionary<int, " + sheetDataName + ">();");
+                builder.AppendLine("    private Dictionary< uint, " + sheetDataName + " > " + mapContainerName + " = new Dictionary< uint, " + sheetDataName + " >();");
                 builder.AppendLine("    ");
             }
 
@@ -112,6 +112,15 @@ public class ManagerScriptConvertor : IConvertor
 
         string fullFilePath = this.path + className + "_Generated" + ".cs";
 
+        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "/// @file    " + "AbstractDataManager" + ".cs" );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @brief   " + "AbstractDataManager" + " class cs file " );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @date    " + DateTime.Now.ToString( "yyyy.MM.dd" ) );
+        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "" );
+        builder.AppendLine( "" );
         builder.AppendLine("using System;");
         builder.AppendLine("using System.Collections.Generic;");
         builder.AppendLine("using System.Linq;");
@@ -120,6 +129,15 @@ public class ManagerScriptConvertor : IConvertor
         builder.AppendLine("using UnityEngine;");
         builder.AppendLine("");
         builder.AppendLine("");
+        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "/// <summary>" );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @class    " + "AbstractDataManager" );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @brief    " + "AbstractDataManager class" );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// </summary>" );
+        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine("public abstract class " + className + " : IDataManager");
 
         // >Generate Manager Class Start 
@@ -133,14 +151,19 @@ public class ManagerScriptConvertor : IConvertor
                 string sheetDataName = sheetName + "Data";
                 string mapContainerName = sheetDataName + "Map";
 
-                builder.AppendLine("    //Key : key, Value : " + sheetDataName);
-                builder.AppendLine("    public Dictionary<int, " + sheetDataName + "> " + mapContainerName + " = new Dictionary<int, " + sheetDataName + ">();");
+                builder.AppendLine( "    /// <summary> " + sheetDataName + "Dict [ Key : id, Value : " + sheetDataName + " ] </summary>" );
+                builder.AppendLine("    public Dictionary< uint, " + sheetDataName + " > " + mapContainerName + " = new Dictionary< uint, " + sheetDataName + " >();");
                 builder.AppendLine("    ");
             }
         }
+        
+        builder.AppendLine( "" );
 
         // >Generate Load Func Start
         {
+            builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+            builder.AppendLine( "    /// <summary> @brief [ 로드 합니다. ] </summary>" );
+            builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
             builder.AppendLine("    public virtual void Load()");
             builder.AppendLine("    {");
         }
@@ -170,31 +193,70 @@ public class ManagerScriptConvertor : IConvertor
             builder.AppendLine("    }");
             builder.AppendLine("    ");
         }
-        
+
+        // >Generate Getter Start
+        foreach ( var sheetList in rootNamesMap )
+        {
+            foreach ( var sheetName in sheetList.Value )
+            {
+                string sheetDataName = sheetName + "Data";
+                string mapContainerName = sheetDataName + "Map";
+
+                builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+                builder.AppendLine( "    /// <summary> @brief [ @getter " + sheetDataName + " 를 반환합니다. ] </summary>" );
+                builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+                builder.AppendLine( "    public "+ sheetDataName + " Get" + sheetDataName + "( uint id )" );
+                builder.AppendLine( "    {" );
+                builder.AppendLine( "        if ( " + mapContainerName + ".ContainsKey( id ) )" );
+                builder.AppendLine( "            return " + mapContainerName + "[ id ];" );
+                builder.AppendLine( "" );
+                builder.AppendLine( "        return null;" );
+                builder.AppendLine( "    }" );
+                builder.AppendLine( "" );
+            }
+        }
+
+
         // >Generate Init();
-        builder.AppendLine("    public abstract void Init();");
-        builder.AppendLine("    ");
+        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "    /// <summary> @brief [ 초기화 합니다. ] </summary>" );
+        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "    public abstract void Init();" );
+        builder.AppendLine( "    " );
 
         // >Generate LoadJosnData();
-        builder.AppendLine("    protected List<T> LoadJsonData<T>(string path)");
+        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "    /// <summary> @brief [ Json 데이터를 로드 합니다. ] </summary>" );
+        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine("    protected List< T > LoadJsonData< T >( string path )");
         builder.AppendLine("    {");
-        builder.AppendLine("        var loadJson = Resources.Load<TextAsset>(path);");
-        builder.AppendLine("        JsonDatas<T> result = JsonUtility.FromJson<JsonDatas<T>>(loadJson.ToString());");
-        builder.AppendLine("        if (result != null && result.Datas != null)");
+        builder.AppendLine("        var loadJson = Resources.Load< TextAsset >( path );");
+        builder.AppendLine("        JsonDatas< T > result = JsonUtility.FromJson< JsonDatas< T > >( loadJson.ToString() );");
+        builder.AppendLine("        if ( result != null && result.Datas != null )");
         builder.AppendLine("        {");
         builder.AppendLine("            return result.Datas;");
         builder.AppendLine("        }");
-        builder.AppendLine("        return new List<T>();");
+        builder.AppendLine("        return new List< T >();");
         builder.AppendLine("    }");
-        builder.AppendLine("    ");
 
         // >Generate Manager Class End
         builder.AppendLine("}");
 
         // >Generate JsonData
-        builder.AppendLine("public class JsonDatas<T>");
+        builder.AppendLine( "" );
+        builder.AppendLine( "" );
+        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "/// <summary>" );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @class    " + "JsonDatas< T >" );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @brief    " + "JsonDatas class" );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// </summary>" );
+        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine("public class JsonDatas< T >");
         builder.AppendLine("{");
-        builder.AppendLine("    public List<T> Datas;");
+        builder.AppendLine("    public List< T > Datas;");
         builder.AppendLine("}");
 
         File.WriteAllText(fullFilePath, builder.ToString());

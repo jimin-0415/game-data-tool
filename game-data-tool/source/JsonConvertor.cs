@@ -12,7 +12,7 @@ class JsonConvertor : IConvertor
 
     public JsonConvertor()
     {
-        this.path = "../../projectpl-client/ProjectPL/Assets/Resources/Data/Json/";
+        this.path = "../Assets/Resources/Json/";
     }
 
     public JsonConvertor(string filePath)

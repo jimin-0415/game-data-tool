@@ -10,7 +10,7 @@ class ScriptConvertor : IConvertor
 
     public ScriptConvertor()
     {
-        this.path = "../../projectpl-client/ProjectPL/Assets/Script/Data/";
+        this.path = "../Assets/Scripts/Data/";
     }
 
     public ScriptConvertor(string filePath)
@@ -55,9 +55,27 @@ class ScriptConvertor : IConvertor
         //Write Generate String
         StringBuilder builder = new StringBuilder(1000, 50000);
 
+        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "/// @file    " + sheetName + "Data.cs" );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @brief   " + sheetName + " class cs file " );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @date    " + DateTime.Now.ToString( "yyyy.MM.dd" ) );
+        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "" );
+        builder.AppendLine( "" );
         builder.AppendLine("using UnityEngine;");
-        builder.AppendLine(" ");
-        builder.AppendLine(" ");
+        builder.AppendLine("");
+        builder.AppendLine("");
+        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "/// <summary>" );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @class    " + sheetName + "Data " );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @brief    " + sheetName + "Data class" );
+        builder.AppendLine( "///" );
+        builder.AppendLine( "/// </summary>" );
+        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine("[System.Serializable]");
         builder.AppendLine("public class " + sheetName + "Data");
         builder.AppendLine("{");
