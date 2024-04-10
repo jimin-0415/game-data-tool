@@ -65,6 +65,7 @@ class JsonConvertor : IConvertor
                 switch (columnInfos[i].GetDataType())
                 {
                     case EDataType.String:
+                    case EDataType.Unique:
                         data = "\"" + data + "\"";
                         break;
                     default:

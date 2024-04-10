@@ -15,8 +15,8 @@ class ScriptConvertor : IConvertor
 
     public ScriptConvertor(string filePath)
     {
-        this.path = filePath;
-        this.path = "../../";
+        /*this.path = filePath;
+        this.path = "../../";*/
     }
 
     public void Convert(string sheetName, Dictionary<string, List<string>> rootNamesMap, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)

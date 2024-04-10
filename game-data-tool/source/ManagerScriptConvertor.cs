@@ -78,7 +78,7 @@ public class ManagerScriptConvertor : IConvertor
                 string mapContainerName = sheetDataName + "Map";
                 
                 builder.AppendLine("        //Load " + sheetDataName);
-                builder.AppendLine("        List<" + sheetDataName + "> " + sheetDataName + "s = LoadJsonData<" + sheetDataName + ">(\"Data/Json/" + sheetDataName + "\");");
+                builder.AppendLine("        List<" + sheetDataName + "> " + sheetDataName + "s = LoadJsonData<" + sheetDataName + ">(\"Json/" + sheetDataName + "\");");
                 builder.AppendLine("        foreach (" + sheetDataName + " " + sheetDataName + " in " + sheetDataName + "s )");
                 builder.AppendLine("        {");
                 builder.AppendLine("            if(!" + mapContainerName + ".ContainsKey(" + sheetDataName + ".id))");
@@ -127,6 +127,7 @@ public class ManagerScriptConvertor : IConvertor
         builder.AppendLine("using System.Text;");
         builder.AppendLine("using System.Threading.Tasks;");
         builder.AppendLine("using UnityEngine;");
+        builder.AppendLine("using Newtonsoft.Json;" );
         builder.AppendLine("");
         builder.AppendLine("");
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
@@ -176,7 +177,7 @@ public class ManagerScriptConvertor : IConvertor
                 string mapContainerName = sheetDataName + "Map";
 
                 builder.AppendLine("        //Load " + sheetDataName);
-                builder.AppendLine("        List<" + sheetDataName + "> " + sheetDataName + "s = LoadJsonData<" + sheetDataName + ">(\"Data/Json/" + sheetDataName + "\");");
+                builder.AppendLine("        List<" + sheetDataName + "> " + sheetDataName + "s = LoadJsonData<" + sheetDataName + ">(\"Json/" + sheetDataName + "\");");
                 builder.AppendLine("        foreach (" + sheetDataName + " " + sheetDataName + " in " + sheetDataName + "s )");
                 builder.AppendLine("        {");
                 builder.AppendLine("            if(!" + mapContainerName + ".ContainsKey(" + sheetDataName + ".Id))");
@@ -231,7 +232,7 @@ public class ManagerScriptConvertor : IConvertor
         builder.AppendLine("    protected List< T > LoadJsonData< T >( string path )");
         builder.AppendLine("    {");
         builder.AppendLine("        var loadJson = Resources.Load< TextAsset >( path );");
-        builder.AppendLine("        JsonDatas< T > result = JsonUtility.FromJson< JsonDatas< T > >( loadJson.ToString() );");
+        builder.AppendLine("        JsonDatas< T > result = JsonConvert.DeserializeObject< JsonDatas< T > >( loadJson.ToString() );" );
         builder.AppendLine("        if ( result != null && result.Datas != null )");
         builder.AppendLine("        {");
         builder.AppendLine("            return result.Datas;");
