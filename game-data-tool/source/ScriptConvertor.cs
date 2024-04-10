@@ -65,6 +65,8 @@ class ScriptConvertor : IConvertor
         builder.AppendLine( "" );
         builder.AppendLine( "" );
         builder.AppendLine("using UnityEngine;");
+        builder.AppendLine("using Newtonsoft.Json;" );
+        builder.AppendLine("using Newtonsoft.Json.Converters;" );
         builder.AppendLine("");
         builder.AppendLine("");
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
@@ -86,6 +88,8 @@ class ScriptConvertor : IConvertor
                 if(column.Value.GetDataType() != EDataType.Desc)
                 {
                     builder.AppendLine("    /// <summary> " + column.Value.GetDesc() + " </summary> ");
+                    if( column.Value.GetDataType() == EDataType.Unique )
+                        builder.AppendLine( "    [ JsonConverter( typeof( StringEnumConverter ) ) ]" );
                     builder.AppendLine(_ConvertMemberValue(column.Value));
                     builder.AppendLine("    ");
                 }
