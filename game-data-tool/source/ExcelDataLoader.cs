@@ -34,7 +34,8 @@ class ExcelDataLoader : IDataLoader
     //현재 루트 이름
     string curRootName;
 
-    public ExcelDataLoader(string dataPath, IConvertor convertor = null, IConvertor convertor2 = null)
+
+    public ExcelDataLoader( string dataPath, List< IConvertor > convertorList = null )
     {
         this.dataPath = dataPath;
 
@@ -43,13 +44,10 @@ class ExcelDataLoader : IDataLoader
         this.rootNamesMap = new Dictionary<string, List<string>>();
         this.timer = new Stopwatch();
 
-        convertors = new List<IConvertor>();
-
-        if (convertor != null)
-            convertors.Add(convertor);
-
-        if (convertor2 != null)
-            convertors.Add(convertor2);
+        if (convertorList != null)
+            convertors = convertorList;
+        else 
+            convertors = new List<IConvertor>();
     }
 
     public virtual void Init()
@@ -111,7 +109,7 @@ class ExcelDataLoader : IDataLoader
     public virtual void Convert()
     {
         ManagerScriptConvertor msc = new ManagerScriptConvertor();
-        msc.Convert(rootNamesMap);
+        msc.Convert(rootNamesMap, ManagerClassType.AbstractClass );
 
         foreach(var colunmInfo in columnInfosMap)
         {

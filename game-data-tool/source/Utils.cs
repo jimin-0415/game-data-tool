@@ -138,6 +138,14 @@ public static class Utils
     {
         return "\"" + name + "\":";
     }
+
+    public static string LowerFirstChar(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return null;
+
+        return char.ToLower(input[0]) + input.Substring(1);
+    }
 }
 
 

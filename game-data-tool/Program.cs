@@ -17,7 +17,15 @@ class Program
 
         try
         {
-            IDataLoader dataLoader = new ExcelDataLoader( "../Assets/Data/", new JsonConvertor(), new ScriptConvertor());
+            List<IConvertor> convertors = new List<IConvertor>();
+            convertors.Add( new JsonConvertor() );
+            convertors.Add( new ScriptConvertor() );
+            convertors.Add( new ManagerScriptConvertor() );
+            convertors.Add( new ManagerTemplateScriptConvertor() );
+
+            IDataLoader dataLoader = new ExcelDataLoader(
+                "../Assets/Data/", convertors);
+
             dataLoader.Init();
             dataLoader.Load();
             dataLoader.Convert();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Resources;
 using System.Text;
@@ -42,6 +43,8 @@ public class ManagerScriptConvertor : IConvertor
         foreach ( var sheetList  in rootNamesMap)
         {
             StringBuilder builder = new StringBuilder(1000, 50000);
+
+            //string className = 
 
             string fullFilePath = this.path + sheetList.Key + "Data_Generated" + ".cs";
 
@@ -108,19 +111,10 @@ public class ManagerScriptConvertor : IConvertor
         //AbstractClass 하나에 모든 로드 파일이 있습니다.
         StringBuilder builder = new StringBuilder(1000, 50000);
 
-        string className = "AbstractDataManager";
+        string className = "DataManager";
 
-        string fullFilePath = this.path + className + "_Generated" + ".cs";
+        string fullFilePath = this.path + className + ".cs";
 
-        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "/// @file    " + "AbstractDataManager" + ".cs" );
-        builder.AppendLine( "///" );
-        builder.AppendLine( "/// @brief   " + "AbstractDataManager" + " class cs file " );
-        builder.AppendLine( "///" );
-        builder.AppendLine( "/// @date    " + DateTime.Now.ToString( "yyyy.MM.dd" ) );
-        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "" );
-        builder.AppendLine( "" );
         builder.AppendLine("using System;");
         builder.AppendLine("using System.Collections.Generic;");
         builder.AppendLine("using System.Linq;");
@@ -133,9 +127,8 @@ public class ManagerScriptConvertor : IConvertor
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "/// <summary>" );
         builder.AppendLine( "///" );
-        builder.AppendLine( "/// @class    " + "AbstractDataManager" );
-        builder.AppendLine( "///" );
-        builder.AppendLine( "/// @brief    " + "AbstractDataManager class" );
+        builder.AppendLine( "/// @class    [ DataManager ]" );
+        builder.AppendLine( "/// @brief    [ DataManager class ]" );
         builder.AppendLine( "///" );
         builder.AppendLine( "/// </summary>" );
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
@@ -144,22 +137,27 @@ public class ManagerScriptConvertor : IConvertor
         // >Generate Manager Class Start 
         builder.AppendLine("{");
 
-        //Generate Map Container
+        // >Generate Manager var
+        HashSet<string> visited = new HashSet<string>();
         foreach (var sheetList in rootNamesMap)
         {
-            foreach (var sheetName in sheetList.Value)
-            {
-                string sheetDataName = sheetName + "Data";
-                string mapContainerName = sheetDataName + "Map";
+            string[] ar = sheetList.Key.Split( "/" );
+            var excelRootName = ar[ ar.Length - 1 ];
 
-                builder.AppendLine( "    /// <summary> " + sheetDataName + "Dict [ Key : id, Value : " + sheetDataName + " ] </summary>" );
-                builder.AppendLine("    public Dictionary< uint, " + sheetDataName + " > " + mapContainerName + " = new Dictionary< uint, " + sheetDataName + " >();");
-                builder.AppendLine("    ");
-            }
+            if (visited.Contains(excelRootName))
+                continue;
+
+            visited.Add(excelRootName);
+
+            string managerClassName = excelRootName + "DataManager";
+            string managerVarName = "m_" + Utils.LowerFirstChar( managerClassName );
+
+            builder.AppendLine( "    /// <summary> " + managerClassName + " </summary>" );
+            builder.AppendLine( "    private " + managerClassName + " " + managerVarName + " = new " + managerClassName + "();" );
+            builder.AppendLine( "    public " + managerClassName + " " + managerClassName + " => " + managerVarName + ";" );
+            builder.AppendLine( "" );
         }
         
-        builder.AppendLine( "" );
-
         // >Generate Load Func Start
         {
             builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
@@ -169,67 +167,60 @@ public class ManagerScriptConvertor : IConvertor
             builder.AppendLine("    {");
         }
 
-        foreach (var sheetList in rootNamesMap)
+        foreach( var excelRootName in visited )
         {
-            foreach (var sheetName in sheetList.Value)
-            {
-                string sheetDataName = sheetName + "Data";
-                string mapContainerName = sheetDataName + "Map";
+            string managerClassName = excelRootName + "DataManager";
+            string managerVarName = "m_" + Utils.LowerFirstChar( managerClassName );
 
-                builder.AppendLine("        //Load " + sheetDataName);
-                builder.AppendLine("        List<" + sheetDataName + "> " + sheetDataName + "s = LoadJsonData<" + sheetDataName + ">(\"Json/" + sheetDataName + "\");");
-                builder.AppendLine("        foreach (" + sheetDataName + " " + sheetDataName + " in " + sheetDataName + "s )");
-                builder.AppendLine("        {");
-                builder.AppendLine("            if(!" + mapContainerName + ".ContainsKey(" + sheetDataName + ".Id))");
-                builder.AppendLine("            {");
-                builder.AppendLine("                " + mapContainerName + ".Add(" + sheetDataName + ".Id, " + sheetDataName + ");");
-                builder.AppendLine("            }");
-                builder.AppendLine("        }");
-                builder.AppendLine("    ");
-            }
+            builder.AppendLine( "        " + managerVarName + ".Load();" );
         }
 
-        // >Generate Load Func End
         {
             builder.AppendLine("    }");
             builder.AppendLine("    ");
         }
 
-        // >Generate Getter Start
-        foreach ( var sheetList in rootNamesMap )
-        {
-            foreach ( var sheetName in sheetList.Value )
-            {
-                string sheetDataName = sheetName + "Data";
-                string mapContainerName = sheetDataName + "Map";
-
-                builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-                builder.AppendLine( "    /// <summary> @brief [ @getter " + sheetDataName + " 를 반환합니다. ] </summary>" );
-                builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-                builder.AppendLine( "    public "+ sheetDataName + " Get" + sheetDataName + "( uint id )" );
-                builder.AppendLine( "    {" );
-                builder.AppendLine( "        if ( " + mapContainerName + ".ContainsKey( id ) )" );
-                builder.AppendLine( "            return " + mapContainerName + "[ id ];" );
-                builder.AppendLine( "" );
-                builder.AppendLine( "        return null;" );
-                builder.AppendLine( "    }" );
-                builder.AppendLine( "" );
-            }
-        }
-
-
         // >Generate Init();
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    /// <summary> @brief [ 초기화 합니다. ] </summary>" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    public abstract void Init();" );
-        builder.AppendLine( "    " );
+        builder.AppendLine( "    public void Initialize()" );
+        builder.AppendLine( "    {" );
 
+        foreach ( var excelRootName in visited )
+        {
+            string managerClassName = excelRootName + "DataManager";
+            string managerVarName = "m_" + Utils.LowerFirstChar( managerClassName );
+
+            builder.AppendLine( "        " + managerVarName + ".Initialize01();" );
+        }
+
+        foreach ( var excelRootName in visited )
+        {
+            string managerClassName = excelRootName + "DataManager";
+            string managerVarName = "m_" + Utils.LowerFirstChar( managerClassName );
+
+            builder.AppendLine( "        " + managerVarName + ".Initialize02();" );
+        }
+
+        foreach ( var excelRootName in visited )
+        {
+            string managerClassName = excelRootName + "DataManager";
+            string managerVarName = "m_" + Utils.LowerFirstChar( managerClassName );
+
+            builder.AppendLine( "        " + managerVarName + ".Initialize03();" );
+        }
+
+        {
+            builder.AppendLine( "    }" );
+            builder.AppendLine( "" );
+        }
+        
         // >Generate LoadJosnData();
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    /// <summary> @brief [ Json 데이터를 로드 합니다. ] </summary>" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine("    protected List< T > LoadJsonData< T >( string path )");
+        builder.AppendLine("    public static List< T > LoadJsonData< T >( string path )");
         builder.AppendLine("    {");
         builder.AppendLine("        var loadJson = Resources.Load< TextAsset >( path );");
         builder.AppendLine("        JsonDatas< T > result = JsonConvert.DeserializeObject< JsonDatas< T > >( loadJson.ToString() );" );
