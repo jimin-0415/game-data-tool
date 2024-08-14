@@ -132,7 +132,7 @@ public class ManagerScriptConvertor : IConvertor
         builder.AppendLine( "///" );
         builder.AppendLine( "/// </summary>" );
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine("public abstract class " + className + " : IDataManager");
+        builder.AppendLine("public class " + className + " : IDataManager");
 
         // >Generate Manager Class Start 
         builder.AppendLine("{");

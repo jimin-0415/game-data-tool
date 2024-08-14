@@ -65,9 +65,8 @@ public class ManagerTemplateScriptConvertor : IConvertor
         StringBuilder builder = new StringBuilder( 1000, 50000 );
 
         string sheetDataName = sheetName + "Data";     // NameData;
-        string sheetDictName = sheetDataName + "Dict"; // NameDataDict;
-        string sheetDatavariable = Utils.LowerFirstChar(sheetDataName);
-        string sheetDictvariable = "m_" + Utils.LowerFirstChar(sheetDictName);
+        string sheetInfoName = sheetName + "Info";     // NameInfo;
+        string sheetDictName = sheetDataName + "";     // NameDataDict;
 
         //LowerFirstCharacter
 
@@ -87,8 +86,8 @@ public class ManagerTemplateScriptConvertor : IConvertor
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "public abstract class " + sheetDataName + "ManagerTemplate" );
         builder.AppendLine( "{" );
-        builder.AppendLine( "    /// <summary> " + sheetDictName + " [ Key : id, Value : " + sheetDataName + " ] </summary>" );
-        builder.AppendLine( "    private Dictionary< uint, " + sheetDataName + " > " + sheetDictvariable + " = new Dictionary< uint, " + sheetDataName + " >();" );
+        builder.AppendLine( "    /// <summary> [ Key : id, Value : " + sheetDataName + " ] </summary>" );
+        builder.AppendLine( "    protected Dictionary< uint, " + sheetInfoName + " > m_infos " + " = new Dictionary< uint, " + sheetInfoName + " >();" );
         
         builder.AppendLine( " ");
         
@@ -97,12 +96,14 @@ public class ManagerTemplateScriptConvertor : IConvertor
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    public void Load()" );
         builder.AppendLine( "    {" );
-        builder.AppendLine( "        List< " + sheetDataName + " > " + sheetDatavariable + "s = DataManager.LoadJsonData<" + sheetDataName + ">(\"Json/"+ sheetDataName + "\");" );
-        builder.AppendLine( "        foreach ( " + sheetDataName + " " + sheetDatavariable + " in " + sheetDatavariable + "s )" );
+        builder.AppendLine( "        List< " + sheetDataName + " > datas = DataManager.LoadJsonData<" + sheetDataName + ">(\"Json/"+ sheetDataName + "\");" );
+        builder.AppendLine( "        foreach ( var data in datas )" );
         builder.AppendLine( "        {");
-        builder.AppendLine( "            if(!" + sheetDictvariable + ".ContainsKey( " + sheetDatavariable + ".id) )");
+        builder.AppendLine( "            if( !m_infos.ContainsKey( data.id ) )");
         builder.AppendLine( "            {" );
-        builder.AppendLine( "                " + sheetDictvariable + ".Add(" + sheetDatavariable + ".id, " + sheetDatavariable + " );");
+        builder.AppendLine( "                " + sheetInfoName + " info = new " + sheetInfoName + "();" );
+        builder.AppendLine( "                info.Load( data );" );
+        builder.AppendLine( "                m_infos.Add( data.id, info );");
         builder.AppendLine( "            }" );
         builder.AppendLine( "        }" );
         builder.AppendLine( "    }" );
@@ -112,10 +113,10 @@ public class ManagerTemplateScriptConvertor : IConvertor
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    /// <summary> @brief [ @getter "+ sheetDataName + "를 반환 합니다. ] </summary>" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    public "+ sheetDataName + " Get"+ sheetDataName + "( uint id )" );
+        builder.AppendLine( "    public "+ sheetInfoName + " Get"+ sheetInfoName + "( uint id )" );
         builder.AppendLine( "    {" );
-        builder.AppendLine( "        if ( "+ sheetDictvariable + ".ContainsKey( id ) )" );
-        builder.AppendLine( "            return " + sheetDictvariable + "[ id ];" );
+        builder.AppendLine( "        if ( m_infos.ContainsKey( id ) )" );
+        builder.AppendLine( "            return m_infos[ id ];" );
         builder.AppendLine( "    " );
         builder.AppendLine( "        return null;" );
         builder.AppendLine( "    }" );
@@ -125,21 +126,39 @@ public class ManagerTemplateScriptConvertor : IConvertor
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    /// <summary> @brief [ 초기화를 진행합니다. ] </summary>" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    public virtual void Initialize01() { }" );
+        builder.AppendLine( "    public virtual void Initialize01()" );
+        builder.AppendLine( "    {" );
+        builder.AppendLine( "        foreach( var info in m_infos )" );
+        builder.AppendLine( "        {" );
+        builder.AppendLine( "            info.Value.Initialize01();" );
+        builder.AppendLine( "        }" );
+        builder.AppendLine( "    }" );
 
         builder.AppendLine( "" );
 
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    /// <summary> @brief [ 초기화를 진행합니다. ] </summary>" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    public virtual void Initialize02() { }" );
+        builder.AppendLine( "    public virtual void Initialize02()" );
+        builder.AppendLine( "    {" );
+        builder.AppendLine( "        foreach( var info in m_infos )" );
+        builder.AppendLine( "        {" );
+        builder.AppendLine( "            info.Value.Initialize02();" );
+        builder.AppendLine( "        }" );
+        builder.AppendLine( "    }" );
 
         builder.AppendLine( "" );
 
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    /// <summary> @brief [ 초기화를 진행합니다. ] </summary>" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    public virtual void Initialize03() { }" );
+        builder.AppendLine( "    public virtual void Initialize03()" );
+        builder.AppendLine( "    {" );
+        builder.AppendLine( "        foreach( var info in m_infos )" );
+        builder.AppendLine( "        {" );
+        builder.AppendLine( "            info.Value.Initialize03();" );
+        builder.AppendLine( "        }" );
+        builder.AppendLine( "    }" );
 
         builder.AppendLine( "}" );
 
@@ -151,7 +170,7 @@ public class ManagerTemplateScriptConvertor : IConvertor
             directoryInfo.Create();
 
         //파일 생성
-        string fullFilePath = directoryPath + "/" + sheetName + "ManagerTemplate.cs";
+        string fullFilePath = directoryPath + "/" + sheetName + "DataManagerTemplate.cs";
         File.WriteAllText( fullFilePath, builder.ToString() );
     }
 
@@ -206,7 +225,7 @@ public class ManagerTemplateScriptConvertor : IConvertor
             directoryInfo.Create();
 
         //파일 생성
-        string fullFilePath = directoryPath + "/" + sheetName + "Manager.cs";
+        string fullFilePath = directoryPath + "/" + sheetName + "DataManager.cs";
 
         FileInfo fileInfo = new FileInfo( fullFilePath );
         if( !fileInfo.Exists )
