@@ -79,16 +79,16 @@ public class ManagerTemplateScriptConvertor : IConvertor
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "/// <summary>" );
         builder.AppendLine( "///" );
-        builder.AppendLine( "/// @class    [" + sheetDataName + "ManagerTemplate ]" );
-        builder.AppendLine( "/// @brief    [" + sheetDataName + "ManagerTemplate class ]" );
+        builder.AppendLine( "/// @class    [" + sheetInfoName + "ManagerTemplate ]" );
+        builder.AppendLine( "/// @brief    [" + sheetInfoName + "ManagerTemplate class ]" );
         builder.AppendLine( "///" );
         builder.AppendLine( "/// </summary>" );
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "public abstract class " + sheetDataName + "ManagerTemplate" );
+        builder.AppendLine( "public abstract class " + sheetInfoName + "ManagerTemplate : Singleton< " + sheetInfoName + "Manager >" );
         builder.AppendLine( "{" );
-        builder.AppendLine( "    /// <summary> [ Key : id, Value : " + sheetDataName + " ] </summary>" );
+        builder.AppendLine( "    /// <summary> [ Key : id, Value : " + sheetInfoName + " ] </summary>" );
         builder.AppendLine( "    protected Dictionary< uint, " + sheetInfoName + " > m_infos " + " = new Dictionary< uint, " + sheetInfoName + " >();" );
-        
+        builder.AppendLine( "    public Dictionary< uint, " + sheetInfoName + " > Infos => m_infos;" );
         builder.AppendLine( " ");
         
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
@@ -111,7 +111,7 @@ public class ManagerTemplateScriptConvertor : IConvertor
         builder.AppendLine( " " );
 
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    /// <summary> @brief [ @getter "+ sheetDataName + "를 반환 합니다. ] </summary>" );
+        builder.AppendLine( "    /// <summary> @brief [ @getter "+ sheetInfoName + "를 반환 합니다. ] </summary>" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    public "+ sheetInfoName + " Get"+ sheetInfoName + "( uint id )" );
         builder.AppendLine( "    {" );
@@ -170,7 +170,7 @@ public class ManagerTemplateScriptConvertor : IConvertor
             directoryInfo.Create();
 
         //파일 생성
-        string fullFilePath = directoryPath + "/" + sheetName + "DataManagerTemplate.cs";
+        string fullFilePath = directoryPath + "/" + sheetInfoName + "InfoManagerTemplate.cs";
         File.WriteAllText( fullFilePath, builder.ToString() );
     }
 
@@ -190,6 +190,7 @@ public class ManagerTemplateScriptConvertor : IConvertor
         StringBuilder builder = new StringBuilder( 1000, 50000 );
 
         string sheetDataName = sheetName + "Data";     // NameData;
+        string sheetInfoName = sheetName + "Info";     // NameInfo;
         string sheetDictName = sheetDataName + "Dict"; // NameDataDict;
 
         builder.AppendLine( "using UnityEngine;" );
@@ -200,18 +201,18 @@ public class ManagerTemplateScriptConvertor : IConvertor
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "/// <summary>" );
         builder.AppendLine( "///" );
-        builder.AppendLine( "/// @class    [" + sheetDataName + " Manager ]" );
-        builder.AppendLine( "/// @brief    [" + sheetDataName + " Manager class ]" );
+        builder.AppendLine( "/// @class    [" + sheetInfoName + " Manager ]" );
+        builder.AppendLine( "/// @brief    [" + sheetInfoName + " Manager class ]" );
         builder.AppendLine( "/// @date     [" + DateTime.Now.ToString( "yyyy.MM.dd" ) + "]" );
         builder.AppendLine( "///" );
         builder.AppendLine( "/// </summary>" );
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "public class " + sheetDataName + "Manager : " + sheetDataName + "ManagerTemplate" );
+        builder.AppendLine( "public class " + sheetInfoName + "Manager : " + sheetInfoName + "ManagerTemplate" );
         builder.AppendLine( "{" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    /// <summary> @brief [ 초기화를 진행합니다. ] </summary>" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    public virtual void Initialize01()" );
+        builder.AppendLine( "    public override void Initialize01()" );
         builder.AppendLine( "    {" );
         builder.AppendLine( "        base.Initialize01();" );
         builder.AppendLine( "    }" );
@@ -225,7 +226,7 @@ public class ManagerTemplateScriptConvertor : IConvertor
             directoryInfo.Create();
 
         //파일 생성
-        string fullFilePath = directoryPath + "/" + sheetName + "DataManager.cs";
+        string fullFilePath = directoryPath + "/" + sheetInfoName + "Manager.cs";
 
         FileInfo fileInfo = new FileInfo( fullFilePath );
         if( !fileInfo.Exists )

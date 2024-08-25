@@ -149,13 +149,13 @@ public class ManagerScriptConvertor : IConvertor
 
             visited.Add(excelRootName);
 
-            string managerClassName = excelRootName + "DataManager";
-            string managerVarName = "m_" + Utils.LowerFirstChar( managerClassName );
+            //string managerClassName = excelRootName + "DataManager";
+            //string managerVarName = "m_" + Utils.LowerFirstChar( managerClassName );
 
-            builder.AppendLine( "    /// <summary> " + managerClassName + " </summary>" );
-            builder.AppendLine( "    private " + managerClassName + " " + managerVarName + " = new " + managerClassName + "();" );
-            builder.AppendLine( "    public " + managerClassName + " " + managerClassName + " => " + managerVarName + ";" );
-            builder.AppendLine( "" );
+            //builder.AppendLine( "    /// <summary> " + managerClassName + " </summary>" );
+            //builder.AppendLine( "    private " + managerClassName + " " + managerVarName + " = new " + managerClassName + "();" );
+            //builder.AppendLine( "    public " + managerClassName + " " + managerClassName + " => " + managerVarName + ";" );
+            //builder.AppendLine( "" );
         }
         
         // >Generate Load Func Start
@@ -167,13 +167,22 @@ public class ManagerScriptConvertor : IConvertor
             builder.AppendLine("    {");
         }
 
-        foreach( var excelRootName in visited )
+        foreach (var sheetList in rootNamesMap)
         {
-            string managerClassName = excelRootName + "DataManager";
-            string managerVarName = "m_" + Utils.LowerFirstChar( managerClassName );
-
-            builder.AppendLine( "        " + managerVarName + ".Load();" );
+            foreach ( var excelSheetName in sheetList.Value )
+            {
+                string managerClassName = excelSheetName + "InfoManager";
+                string managerVarName = Utils.UpperFirstChar( managerClassName );
+                builder.AppendLine( "        " + managerVarName + ".Instance.Load();" );
+            }
         }
+
+        //foreach ( var excelRootName in visited )
+        //{
+        //    string managerClassName = excelRootName + "InfoManager";
+        //    string managerVarName = Utils.UpperFirstChar( managerClassName );
+        //    builder.AppendLine( "        " + managerVarName + ".Instance.Load();" );
+        //}
 
         {
             builder.AppendLine("    }");
@@ -187,28 +196,34 @@ public class ManagerScriptConvertor : IConvertor
         builder.AppendLine( "    public void Initialize()" );
         builder.AppendLine( "    {" );
 
-        foreach ( var excelRootName in visited )
+        foreach ( var sheetList in rootNamesMap )
         {
-            string managerClassName = excelRootName + "DataManager";
-            string managerVarName = "m_" + Utils.LowerFirstChar( managerClassName );
-
-            builder.AppendLine( "        " + managerVarName + ".Initialize01();" );
+            foreach ( var excelSheetName in sheetList.Value )
+            {
+                string managerClassName = excelSheetName + "InfoManager";
+                string managerVarName = Utils.UpperFirstChar( managerClassName );
+                builder.AppendLine( "        " + managerVarName + ".Instance.Initialize01();" );
+            }
         }
 
-        foreach ( var excelRootName in visited )
+        foreach ( var sheetList in rootNamesMap )
         {
-            string managerClassName = excelRootName + "DataManager";
-            string managerVarName = "m_" + Utils.LowerFirstChar( managerClassName );
-
-            builder.AppendLine( "        " + managerVarName + ".Initialize02();" );
+            foreach ( var excelSheetName in sheetList.Value )
+            {
+                string managerClassName = excelSheetName + "InfoManager";
+                string managerVarName = Utils.UpperFirstChar( managerClassName );
+                builder.AppendLine( "        " + managerVarName + ".Instance.Initialize02();" );
+            }
         }
 
-        foreach ( var excelRootName in visited )
+        foreach ( var sheetList in rootNamesMap )
         {
-            string managerClassName = excelRootName + "DataManager";
-            string managerVarName = "m_" + Utils.LowerFirstChar( managerClassName );
-
-            builder.AppendLine( "        " + managerVarName + ".Initialize03();" );
+            foreach ( var excelSheetName in sheetList.Value )
+            {
+                string managerClassName = excelSheetName + "InfoManager";
+                string managerVarName = Utils.UpperFirstChar( managerClassName );
+                builder.AppendLine( "        " + managerVarName + ".Instance.Initialize03();" );
+            }
         }
 
         {

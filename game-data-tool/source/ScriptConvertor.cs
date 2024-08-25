@@ -262,8 +262,6 @@ class ScriptConvertor : IConvertor
         string result = "    " + "public " +
                         Utils.ConvertDataTypeToString(columnInfo.GetDataType(), columnInfo.GetObjectDataType()) + " ";
 
-        result += "Get";
-
         foreach (var element in colums)
             result += element;
 
