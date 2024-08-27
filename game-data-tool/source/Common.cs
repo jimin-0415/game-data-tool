@@ -70,3 +70,8 @@ public enum ManagerClassType
     Max,
 }
 
+public enum EPacketDirectType
+{
+    ClientToServer,
+    ServerToClient,
+}

@@ -29,6 +29,11 @@ class Program
             dataLoader.Init();
             dataLoader.Load();
             dataLoader.Convert();
+
+            dataLoader = new PacketDataLoader( "../Assets/Data/" );
+            dataLoader.Init();
+            dataLoader.Load();
+            dataLoader.Convert();
         }
         catch(Exception ex)
         {
