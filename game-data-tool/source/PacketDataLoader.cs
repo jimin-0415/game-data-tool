@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -23,12 +24,25 @@ public class PacketDataLoader : IDataLoader
     /// 패킷 정보
     private Dictionary<string, Dictionary<uint, PacketInfo>> m_packetInfoDict;
 
+    /// 타입 정보
+    private Dictionary< string, PacketTypeInfo > m_packetTypeInfoDict;
+
+
     public PacketDataLoader( string dataPath )
     {
         this.dataPath = dataPath;
 
         m_packetInfoDict = new();
+        m_packetTypeInfoDict = new();
     }
+
+    public enum EMarkType
+    {
+        Protocol = 0,
+        Type = 1,
+        Max  = 2,
+    }
+
 
     public virtual void Init()
     {
@@ -37,155 +51,279 @@ public class PacketDataLoader : IDataLoader
 
     public virtual void Load()
     {
+        
         foreach ( var filePath in fileFullPath )
         {
+            EMarkType mkType = EMarkType.Max;
+            if ( filePath.Contains( "Protocol.md" ) )
+                mkType = EMarkType.Protocol;
+            else if ( filePath.Contains( "Type.md" ) )
+                mkType = EMarkType.Type;
+
             var lines = File.ReadAllLines(filePath);
 
             string lastPacketCategory = String.Empty;
+            string lastPacketTypeName = String.Empty;
             uint lastPacketIndex = 0;
 
-            foreach (var line in lines)
+            if ( mkType == EMarkType.Protocol )
             {
-                string pureLine = line.Replace(" ", String.Empty);
-                //string pureLine = temp.Replace("\t-", String.Empty);
-                
-                if( pureLine.Contains("###") )
-                {
-                    string packetCategory = pureLine.Replace("###", String.Empty);
-                    if (!m_packetInfoDict.ContainsKey(packetCategory))
-                        m_packetInfoDict.Add(packetCategory, new Dictionary<uint, PacketInfo>());
 
-                    lastPacketCategory = packetCategory;
-                }
-
-                if (pureLine.Contains("-PacketBegin:"))
+                foreach ( var line in lines )
                 {
-                    string packetIndex = pureLine.Replace("-PacketBegin:", String.Empty);
-                    lastPacketIndex = uint.Parse(packetIndex);
-                }
-
-                if (pureLine.Contains("[>>]"))
-                {
-                    var packetInfoPair = m_packetInfoDict[lastPacketCategory];
-                    if (packetInfoPair == null)
+                    string pureLine = line.Replace(" ", String.Empty);
+                    //string pureLine = temp.Replace("\t-", String.Empty);
+                    if ( pureLine.Contains( "###" ) )
                     {
-                        Console.WriteLine("Check Packet Data [>>]");
-                        return;
+                        string packetCategory = pureLine.Replace("###", String.Empty);
+                        if ( !m_packetInfoDict.ContainsKey( packetCategory ) )
+                            m_packetInfoDict.Add( packetCategory, new Dictionary<uint, PacketInfo>() );
+
+                        lastPacketCategory = packetCategory;
                     }
 
-                    if (!packetInfoPair.ContainsKey(lastPacketIndex))
-                        packetInfoPair.Add( lastPacketIndex, new PacketInfo() );
-
-                    string packetName = pureLine.Replace("[>>]", String.Empty);
-                    
-                    var packetInfo = packetInfoPair[lastPacketIndex];
-                    packetInfo.packetCategory = lastPacketCategory;
-                    packetInfo.packetIndex = lastPacketIndex;
-                    packetInfo.packetName = packetName;
-                    packetInfo.packetDirectType = EPacketDirectType.ClientToServer;
-
-                    lastPacketIndex++;
-                }
-                else if ( pureLine.Contains( "[<<]" ) )
-                {
-                    var packetInfoPair = m_packetInfoDict[lastPacketCategory];
-                    if ( packetInfoPair == null )
+                    if ( pureLine.Contains( "-PacketBegin:" ) )
                     {
-                        Console.WriteLine( "Check Packet Data [<<]" );
-                        return;
+                        string packetIndex = pureLine.Replace("-PacketBegin:", String.Empty);
+                        lastPacketIndex = uint.Parse( packetIndex );
                     }
 
-                    if ( !packetInfoPair.ContainsKey( lastPacketIndex ) )
-                        packetInfoPair.Add( lastPacketIndex, new PacketInfo() );
-
-                    string packetName = pureLine.Replace("[<<]", String.Empty);
-
-                    var packetInfo = packetInfoPair[lastPacketIndex];
-                    packetInfo.packetCategory = lastPacketCategory;
-                    packetInfo.packetIndex = lastPacketIndex;
-                    packetInfo.packetName = packetName;
-                    packetInfo.packetDirectType = EPacketDirectType.ServerToClient;
-
-                    lastPacketIndex++;
-                }
-
-                if (pureLine.Contains("//") && !pureLine.Contains( "\t-" ) )
-                {
-                    var packetInfoPair = m_packetInfoDict[lastPacketCategory];
-                    if ( packetInfoPair == null )
+                    if ( pureLine.Contains( "[>>]" ) )
                     {
-                        Console.WriteLine( "Check Packet Data [<<]" );
-                        return;
+                        var packetInfoPair = m_packetInfoDict[lastPacketCategory];
+                        if ( packetInfoPair == null )
+                        {
+                            Console.WriteLine( "Check Packet Data [>>]" );
+                            return;
+                        }
+
+                        if ( !packetInfoPair.ContainsKey( lastPacketIndex ) )
+                            packetInfoPair.Add( lastPacketIndex, new PacketInfo() );
+
+                        string packetName = pureLine.Replace("[>>]", String.Empty);
+
+                        var packetInfo = packetInfoPair[lastPacketIndex];
+                        packetInfo.packetCategory = lastPacketCategory;
+                        packetInfo.packetIndex = lastPacketIndex;
+                        packetInfo.packetName = packetName;
+                        packetInfo.packetDirectType = EPacketDirectType.ClientToServer;
+
+                        lastPacketIndex++;
+                    }
+                    else if ( pureLine.Contains( "[<<]" ) )
+                    {
+                        var packetInfoPair = m_packetInfoDict[lastPacketCategory];
+                        if ( packetInfoPair == null )
+                        {
+                            Console.WriteLine( "Check Packet Data [<<]" );
+                            return;
+                        }
+
+                        if ( !packetInfoPair.ContainsKey( lastPacketIndex ) )
+                            packetInfoPair.Add( lastPacketIndex, new PacketInfo() );
+
+                        string packetName = pureLine.Replace("[<<]", String.Empty);
+
+                        var packetInfo = packetInfoPair[lastPacketIndex];
+                        packetInfo.packetCategory = lastPacketCategory;
+                        packetInfo.packetIndex = lastPacketIndex;
+                        packetInfo.packetName = packetName;
+                        packetInfo.packetDirectType = EPacketDirectType.ServerToClient;
+
+                        lastPacketIndex++;
                     }
 
-                    string packetDesc = pureLine.Replace("//", String.Empty);
-                    var packetInfo = packetInfoPair[lastPacketIndex - 1];
-                    packetInfo.packetDesc = packetDesc;
-                }
-
-                if (pureLine.Contains("//") && pureLine.Contains("\t-"))
-                {
-                    PacketElementInfo packetElementInfo = new PacketElementInfo();
-
-                    string packetElement = pureLine.Replace("\t-", String.Empty);
-                    string[] packetElementList = packetElement.Split("//");
-
-                    var element = packetElementList[0];
-
-                    //- int m_id;      // 회득한 아이템 아이디
-                    string dataType = String.Empty;
-
-                    if( element.Contains( "bool" ) )
-                        dataType = "bool";
-                    else if( element.Contains( "byte" ) )
-                        dataType = "byte";
-                    else if ( element.Contains( "sbyte" ) )
-                        dataType = "sbyte";
-                    else if ( element.Contains( "short" ) )
-                        dataType = "short";
-                    else if ( element.Contains( "ushort" ) )
-                        dataType = "ushort";
-                    else if ( element.Contains( "int" ) )
-                        dataType = "int";
-                    else if ( element.Contains( "uint" ) )
-                        dataType = "uint";
-                    else if ( element.Contains( "long" ) )
-                        dataType = "long";
-                    else if ( element.Contains( "ulong" ) )
-                        dataType = "ulong";
-                    else if ( element.Contains( "float" ) )
-                        dataType = "float";
-                    else if ( element.Contains( "double" ) )
-                        dataType = "double";
-                    else if ( element.Contains( "decimal" ) )
-                        dataType = "decimal";
-                    else if ( element.Contains( "char" ) )
-                        dataType = "char";
-                    else if ( element.Contains( "string" ) )
-                        dataType = "string";
-
-                    var varName = element.Replace(dataType, String.Empty);
-                    var varRealName = varName.Replace(";", String.Empty);
-                    packetElementInfo.dataType = Utils.ConvertDataType(dataType);
-                    packetElementInfo.varName = varRealName;
-
-                    if (packetElementList.Length > 1)
-                        packetElementInfo.desc = packetElementList[1];
-                    else
-                        packetElementInfo.desc = "no Desc";
-                    
-                    var packetInfoPair = m_packetInfoDict[lastPacketCategory];
-                    if ( packetInfoPair == null )
+                    if ( pureLine.Contains( "//" ) && !pureLine.Contains( "\t-" ) )
                     {
-                        Console.WriteLine( "Check Packet Data [<<]" );
-                        return;
+                        var packetInfoPair = m_packetInfoDict[lastPacketCategory];
+                        if ( packetInfoPair == null )
+                        {
+                            Console.WriteLine( "Check Packet Data [<<]" );
+                            return;
+                        }
+
+                        string packetDesc = pureLine.Replace("//", String.Empty);
+                        var packetInfo = packetInfoPair[lastPacketIndex - 1];
+                        packetInfo.packetDesc = packetDesc;
                     }
 
-                    var packetInfo = packetInfoPair[lastPacketIndex -1 ];
-                    if ( packetInfo.packetElementList == null )
-                        packetInfo.packetElementList = new List<PacketElementInfo>();
+                    if ( pureLine.Contains( "//" ) && pureLine.Contains( "\t-" ) )
+                    {
+                        PacketElementInfo packetElementInfo = new PacketElementInfo();
 
-                    packetInfo.packetElementList.Add( packetElementInfo );
+                        string packetElement = pureLine.Replace("\t-", String.Empty);
+                        string[] packetElementList = packetElement.Split("//");
+
+                        var element = packetElementList[0];
+
+                        // intm_id;      // 회득한 아이템 아이디
+                        string dataType = String.Empty;
+
+                        if ( element.Contains( "bool" ) )
+                            dataType = "bool";
+                        else if ( element.Contains( "sbyte" ) )
+                            dataType = "sbyte";
+                        else if ( element.Contains( "byte" ) )
+                            dataType = "byte";
+                        else if ( element.Contains( "ushort" ) )
+                            dataType = "ushort";
+                        else if ( element.Contains( "short" ) )
+                            dataType = "short";
+                        else if ( element.Contains( "uint" ) )
+                            dataType = "uint";
+                        else if ( element.Contains( "int" ) )
+                            dataType = "int";
+                        else if ( element.Contains( "ulong" ) )
+                            dataType = "ulong";
+                        else if ( element.Contains( "long" ) )
+                            dataType = "long";
+                        else if ( element.Contains( "float" ) )
+                            dataType = "float";
+                        else if ( element.Contains( "double" ) )
+                            dataType = "double";
+                        else if ( element.Contains( "decimal" ) )
+                            dataType = "decimal";
+                        else if ( element.Contains( "char" ) )
+                            dataType = "char";
+                        else if ( element.Contains( "string" ) )
+                            dataType = "string";
+                        else
+                        {
+                            // ObjectType은 데이터 타입이 별도로 있음.
+                            string[] elemntList = element.Split("m_");
+                            dataType = elemntList [ 0 ];
+                        }
+
+
+                        var varName = element.Replace(dataType, String.Empty);
+                        var varRealName = varName.Replace(";", String.Empty);
+                        packetElementInfo.dataType = Utils.ConvertDataType( dataType );
+                        packetElementInfo.uniqueDataType = dataType;
+                        packetElementInfo.varName = varRealName;
+
+                        if ( packetElementList.Length > 1 )
+                            packetElementInfo.desc = packetElementList [ 1 ];
+                        else
+                            packetElementInfo.desc = "no Desc";
+
+                        var packetInfoPair = m_packetInfoDict[lastPacketCategory];
+                        if ( packetInfoPair == null )
+                        {
+                            Console.WriteLine( "Check Packet Data [<<]" );
+                            return;
+                        }
+
+                        var packetInfo = packetInfoPair[lastPacketIndex -1 ];
+                        if ( packetInfo.packetElementList == null )
+                            packetInfo.packetElementList = new List<PacketElementInfo>();
+
+                        packetInfo.packetElementList.Add( packetElementInfo );
+                    }
+                }
+            }
+            else if( mkType == EMarkType.Type )
+            {
+                foreach ( var line in lines )
+                {
+                    string pureLine = line.Replace(" ", String.Empty);
+
+                    if ( pureLine.Contains( "[-]" ) )
+                    {
+                        string packetName = pureLine.Replace("[-]", String.Empty);
+
+                        if ( !m_packetTypeInfoDict.ContainsKey( packetName ) )
+                            m_packetTypeInfoDict.Add( packetName, new PacketTypeInfo() );
+
+                        var packetTypeInfo = m_packetTypeInfoDict[packetName];
+                        packetTypeInfo.packetName = packetName;
+
+                        lastPacketTypeName = packetName;
+                    }
+
+                    if ( pureLine.Contains( "//" ) && !pureLine.Contains( "\t-" ) )
+                    {
+                        var packetTypeInfo = m_packetTypeInfoDict[lastPacketTypeName];
+                        if ( packetTypeInfo == null )
+                        {
+                            Console.WriteLine( "Check Packet Data [<<]" );
+                            return;
+                        }
+
+                        string packetDesc = pureLine.Replace("//", String.Empty);
+                        packetTypeInfo.packetDesc = packetDesc;
+                    }
+
+                    if ( pureLine.Contains( "//" ) && pureLine.Contains( "\t-" ) )
+                    {
+                        PacketElementInfo packetElementInfo = new PacketElementInfo();
+
+                        string packetElement = pureLine.Replace("\t-", String.Empty);
+                        string[] packetElementList = packetElement.Split("//");
+
+                        var element = packetElementList[0];
+
+                        // intm_id;      // 회득한 아이템 아이디
+                        string dataType = String.Empty;
+
+                        if ( element.Contains( "bool" ) )
+                            dataType = "bool";
+                        else if ( element.Contains( "sbyte" ) )
+                            dataType = "sbyte";
+                        else if ( element.Contains( "byte" ) )
+                            dataType = "byte";
+                        else if ( element.Contains( "ushort" ) )
+                            dataType = "ushort";
+                        else if ( element.Contains( "short" ) )
+                            dataType = "short";
+                        else if ( element.Contains( "uint" ) )
+                            dataType = "uint";
+                        else if ( element.Contains( "int" ) )
+                            dataType = "int";
+                        else if ( element.Contains( "ulong" ) )
+                            dataType = "ulong";
+                        else if ( element.Contains( "long" ) )
+                            dataType = "long";
+                        else if ( element.Contains( "float" ) )
+                            dataType = "float";
+                        else if ( element.Contains( "double" ) )
+                            dataType = "double";
+                        else if ( element.Contains( "decimal" ) )
+                            dataType = "decimal";
+                        else if ( element.Contains( "char" ) )
+                            dataType = "char";
+                        else if ( element.Contains( "string" ) )
+                            dataType = "string";
+                        else
+                        {
+                            // ObjectType은 데이터 타입이 별도로 있음.
+                            string[] elemntList = element.Split("m_");
+                            dataType = elemntList [ 0 ];
+                        }
+
+
+                        var varName = element.Replace(dataType, String.Empty);
+                        var varRealName = varName.Replace(";", String.Empty);
+                        packetElementInfo.dataType = Utils.ConvertDataType( dataType );
+                        packetElementInfo.uniqueDataType = dataType;
+                        packetElementInfo.varName = varRealName;
+
+                        if ( packetElementList.Length > 1 )
+                            packetElementInfo.desc = packetElementList [ 1 ];
+                        else
+                            packetElementInfo.desc = "no Desc";
+
+                        var packetTypeInfo = m_packetTypeInfoDict[lastPacketTypeName];
+                        if ( packetTypeInfo == null )
+                        {
+                            Console.WriteLine( "Check Packet Data [-]" );
+                            return;
+                        }
+
+                        if ( packetTypeInfo.packetElementList == null )
+                            packetTypeInfo.packetElementList = new List<PacketElementInfo>();
+
+                        packetTypeInfo.packetElementList.Add( packetElementInfo );
+                    }
                 }
             }
         }
@@ -210,8 +348,8 @@ public class PacketDataLoader : IDataLoader
         _ConvertToPacketHandler();
         _ConvertToPacket();
         _ConverToEunm();
-        // packet enum 추가
 
+        _ConvertToType();
 
         // 별도 패킷들.
 
@@ -578,15 +716,38 @@ public class PacketDataLoader : IDataLoader
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    /// <summary> @brief [ 송신 합니다. ] </summary>" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    public static void Send<T>( T packet ) where T : PktPacket" );
+        builder.AppendLine( "    public static void Send<T>( T packet, EPacketSendType packetSendType, ulong clientId ) where T : PktPacket" );
         builder.AppendLine( "    {" );
         builder.AppendLine( "        byte[] serializedData = PktUtil.ToBytes(packet);" );
         builder.AppendLine( "        var writer = new FastBufferWriter(FastBufferWriter.GetWriteSize(serializedData), Allocator.Temp);" );
         builder.AppendLine( "        using ( writer )" );
         builder.AppendLine( "        {" );
         builder.AppendLine( "            writer.WriteValueSafe( serializedData );" );
-        builder.AppendLine( "            NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage(" );
-        builder.AppendLine( "                packet.ProtocolType.ToString(), NetworkManager.Singleton.ConnectedClientsIds, writer );" );
+        builder.AppendLine( "" );
+        builder.AppendLine( "            switch( packetSendType )" );
+        builder.AppendLine( "            {" );
+        builder.AppendLine( "                case EPacketSendType.All:" );
+        builder.AppendLine( "                {" );
+        builder.AppendLine( "                    NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage(" );
+        builder.AppendLine( "                        packet.ProtocolType.ToString(), NetworkManager.Singleton.ConnectedClientsIds, writer );" );
+        builder.AppendLine( "                } break;" );
+        builder.AppendLine( "                case EPacketSendType.OnlyClient:" );
+        builder.AppendLine( "                {" );
+        builder.AppendLine( "                    NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage(" );
+        builder.AppendLine( "                        packet.ProtocolType.ToString(), clientId, writer );" );
+        builder.AppendLine( "                } break;" );
+        builder.AppendLine( "                case EPacketSendType.ExceptClient:" );
+        builder.AppendLine( "                {" );
+        builder.AppendLine( "                    foreach( ulong connectedClientId in NetworkManager.Singleton.ConnectedClientsIds )" );
+        builder.AppendLine( "                    {" );
+        builder.AppendLine( "                        if ( connectedClientId == clientId )" );
+        builder.AppendLine( "                            continue;" );
+        builder.AppendLine( "" );
+        builder.AppendLine( "                        NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage(" );
+        builder.AppendLine( "                            packet.ProtocolType.ToString(), connectedClientId, writer );" );
+        builder.AppendLine( "                    }" );
+        builder.AppendLine( "                } break;" );
+        builder.AppendLine( "            }" );
         builder.AppendLine( "        }" );
         builder.AppendLine( "    }" );
         builder.AppendLine( "}" );
@@ -611,6 +772,7 @@ public class PacketDataLoader : IDataLoader
         builder.AppendLine( "using System;" );
         builder.AppendLine( "using UnityEngine;" );
         builder.AppendLine( "using Unity.Netcode;" );
+        builder.AppendLine( "using Network;" );
         builder.AppendLine( "" );
         builder.AppendLine( "" );
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
@@ -638,10 +800,12 @@ public class PacketDataLoader : IDataLoader
                 builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
                 builder.AppendLine( "    public static void Process ( " + packetInfo.Value.packetName + " " + value + " )" );
                 builder.AppendLine( "    {" );
-                builder.AppendLine( "        if( " + value + " == null )" );
-                builder.AppendLine( "            return;" );
+                builder.AppendLine( "        if( " + value + " == null ) return;" );
                 builder.AppendLine( "" );
-                builder.AppendLine( "        " + packetInfo.Value.packetName + "Handler.Process( " + value + ".ObjId, " + value + " );" );
+                builder.AppendLine( "        PersistentPlayer persistentPlayer = PersistentPlayer.GetPersistancePlayer( "+ value + ".ClientId );" );
+                builder.AppendLine( "        if ( persistentPlayer is null ) return;" );
+                builder.AppendLine( "" );
+                builder.AppendLine( "        " + packetInfo.Value.packetName + "Handler.Process( persistentPlayer, "+ value + " );" );
                 builder.AppendLine( "    }" );
                 builder.AppendLine( "" );
             }
@@ -669,6 +833,7 @@ public class PacketDataLoader : IDataLoader
         builder.AppendLine( "using System;" );
         builder.AppendLine( "using UnityEngine;" );
         builder.AppendLine( "using Unity.Netcode;" );
+        builder.AppendLine( "using Network;" );
         builder.AppendLine( "" );
         builder.AppendLine( "" );
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
@@ -696,12 +861,15 @@ public class PacketDataLoader : IDataLoader
                 builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
                 builder.AppendLine( "    public static void Process ( " + packetInfo.Value.packetName + " " + value + " )" );
                 builder.AppendLine( "    {" );
-                builder.AppendLine( "        if( "+ value + " == null )" );
-                builder.AppendLine( "            return;" );
+                builder.AppendLine( "        if( "+ value + " is null ) return;" );
+                builder.AppendLine( "        PersistentPlayer persistentPlayer = PersistentPlayer.GetPersistancePlayer( "+ value + ".ClientId );" );
+                builder.AppendLine( "        if ( persistentPlayer is null ) return;" );
                 builder.AppendLine( "" );
                 builder.AppendLine( "        " + packetInfo.Value.packetName + "Result result = new "+ packetInfo.Value.packetName + "Result();" );
-                builder.AppendLine( "        " + packetInfo.Value.packetName + "Handler.Process( "+ value +".ObjId, " + value + ", result );" );
-                builder.AppendLine( "        ServerMessageSender.Send( result );" );
+                builder.AppendLine( "        " + packetInfo.Value.packetName + "Handler.Process( persistentPlayer, " + value + ", result );" );
+                builder.AppendLine( "" );
+                builder.AppendLine( "        if ( result.PacketResult != EPacketResult.NoResultPacket )" );
+                builder.AppendLine( "            ServerMessageSender.Send( result, EPacketSendType.OnlyClient, persistentPlayer.ClientId );" );
                 builder.AppendLine( "    }" );
                 builder.AppendLine( "" );
             }
@@ -743,13 +911,17 @@ public class PacketDataLoader : IDataLoader
         builder.AppendLine( "[System.Serializable]" );
         builder.AppendLine( "public abstract class PktPacket" );
         builder.AppendLine( "{" );
+        builder.AppendLine( "    /// <summary> 오브젝트 아이디 </summary>" );
+        builder.AppendLine( "    private ulong m_clientId;" );
+        builder.AppendLine( "    public ulong ClientId {  get { return m_clientId; } set { m_clientId = value; } }" );
+        builder.AppendLine( "" );
         builder.AppendLine( "    /// <summary> 프로토콜 타입 </summary>" );
         builder.AppendLine( "    private EProtocolType m_protocolType;" );
         builder.AppendLine( "    public EProtocolType ProtocolType => m_protocolType;" );
         builder.AppendLine( "" );
-        builder.AppendLine( "    /// <summary> 오브젝트 아이디 </summary>" );
-        builder.AppendLine( "    private long m_objId;" );
-        builder.AppendLine( "    public long ObjId => m_objId;" );
+        builder.AppendLine( "    /// <summary> 패킷 결과 </summary>" );
+        builder.AppendLine( "    private EPacketResult m_PacketResult = EPacketResult.Success;" );
+        builder.AppendLine( "    public EPacketResult PacketResult { get { return m_PacketResult; } set { m_PacketResult = value; } }" );
         builder.AppendLine( "" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    /// <summary> @brief [ 생성자 ] </summary>" );
@@ -757,6 +929,7 @@ public class PacketDataLoader : IDataLoader
         builder.AppendLine( "    public PktPacket( EProtocolType protocolType )" );
         builder.AppendLine( "    {" );
         builder.AppendLine( "        m_protocolType = protocolType;" );
+        builder.AppendLine( "        m_clientId     = NetworkManager.Singleton.LocalClientId;" );
         builder.AppendLine( "    }" );
         builder.AppendLine( "" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
@@ -905,6 +1078,7 @@ public class PacketDataLoader : IDataLoader
                 builder.AppendLine( "using System;" );
                 builder.AppendLine( "using UnityEngine;" );
                 builder.AppendLine( "using Unity.Netcode;" );
+                builder.AppendLine( "using Network;" );
                 builder.AppendLine( "" );
                 builder.AppendLine( "" );
                 builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
@@ -921,7 +1095,7 @@ public class PacketDataLoader : IDataLoader
                 builder.AppendLine( "    /// <summary> @brief [ 실행합니다. ] </summary>" );
                 builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
                 builder.AppendLine( "    public static void Process(" );
-                builder.AppendLine( "        long userId," );
+                builder.AppendLine( "        PersistentPlayer persistentPlayer," );
                 builder.AppendLine( "        " + className + " " + Utils.LowerFirstChar( className ) + "," );
                 builder.AppendLine( "        " + className + "Result " + Utils.LowerFirstChar( className ) + "Result )" );
                 builder.AppendLine( "    {" );
@@ -978,7 +1152,7 @@ public class PacketDataLoader : IDataLoader
                 builder.AppendLine( "    /// <summary> @brief [ 실행합니다. ] </summary>" );
                 builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
                 builder.AppendLine( "    public static void Process(" );
-                builder.AppendLine( "        long userId," );
+                builder.AppendLine( "        PersistentPlayer persistentPlayer," );
                 builder.AppendLine( "        " + className + " " + Utils.LowerFirstChar( className ) + " )" );
                 builder.AppendLine( "    {" );
                 builder.AppendLine( "        // 구현이 필요합니다." );
@@ -1017,6 +1191,9 @@ public class PacketDataLoader : IDataLoader
                 builder.AppendLine( "using System;" );
                 builder.AppendLine( "using UnityEngine;" );
                 builder.AppendLine( "using Unity.Netcode;" );
+                builder.AppendLine( "using Newtonsoft.Json;" );
+                builder.AppendLine( "using Newtonsoft.Json.Converters;" );
+                builder.AppendLine( "using System.Collections.Generic;" );
                 builder.AppendLine( "" );
                 builder.AppendLine( "" );
                 builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
@@ -1040,10 +1217,15 @@ public class PacketDataLoader : IDataLoader
                 {
                     var valNameTemp = packetElement.varName.Replace("m_", String.Empty);
                     var publicVale = Utils.UpperFirstChar(valNameTemp);
-                    builder.AppendLine( "" );
+                    //builder.AppendLine( "" );
                     builder.AppendLine( "    /// <summary> " + packetElement.desc + " </summary>" );
-                    builder.AppendLine( "    private " + Utils.ConvertDataTypeToString( packetElement.dataType ) + " " + packetElement.varName + ";" );
-                    builder.AppendLine( "    public " + Utils.ConvertDataTypeToString( packetElement.dataType ) + " " + publicVale + " { get; set; }" );
+
+                    if ( packetElement.dataType == EDataType.Unique )
+                        builder.AppendLine( "    [ JsonConverter( typeof( StringEnumConverter ) ) ]" );
+
+                    //builder.AppendLine( "    private " + Utils.ConvertDataTypeToString( packetElement.dataType, packetElement.uniqueDataType ) + " " + packetElement.varName + ";" );
+                    builder.AppendLine( "    public " + Utils.ConvertDataTypeToString( packetElement.dataType, packetElement.uniqueDataType ) + " " + publicVale + " { get; set; }" );
+                    builder.AppendLine( "" );
                 }
 
                 builder.AppendLine( "" );
@@ -1067,7 +1249,7 @@ public class PacketDataLoader : IDataLoader
                 {
                     var valNameTemp = packetElement.varName.Replace("m_", String.Empty);
                     var publicVale = Utils.UpperFirstChar(valNameTemp);
-                    toStringValue += (publicVale + " : {" + packetElement.varName + "},");
+                    toStringValue += (publicVale + " : {" + publicVale + "},");
                 }
                 toStringValue += "\";";
 
@@ -1127,6 +1309,94 @@ public class PacketDataLoader : IDataLoader
 
         File.WriteAllText( fullFilePath, builder.ToString() );
     }
+
+    public void _ConvertToType()
+    {
+        string path = "../Assets/Scripts/Network/Packet/Types";
+
+        foreach ( var pakerTypeInfoPair in m_packetTypeInfoDict)
+        {
+            StringBuilder builder = new StringBuilder(1000, 50000);
+
+            PacketTypeInfo typeInfo = pakerTypeInfoPair.Value;
+            string className = typeInfo.packetName;
+            string fullFilePath = path + "/"+ className + ".cs";
+
+            builder.AppendLine( "using System;" );
+            builder.AppendLine( "using UnityEngine;" );
+            builder.AppendLine( "using Unity.Netcode;" );
+            builder.AppendLine( "using Newtonsoft.Json;" );
+            builder.AppendLine( "using Newtonsoft.Json.Converters;" );
+            builder.AppendLine( "using System.Collections.Generic;" );
+            builder.AppendLine( "" );
+            builder.AppendLine( "" );
+            builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
+            builder.AppendLine( "/// <summary>" );
+            builder.AppendLine( "///" );
+            builder.AppendLine( "/// @class    [ " + className + " ]" );
+            builder.AppendLine( "/// @brief    [ " + className + " 패킷 클래스 ]" );
+            builder.AppendLine( "///" );
+            builder.AppendLine( "/// </summary>" );
+            builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
+            builder.AppendLine( "[ System.Serializable]" );
+            builder.AppendLine( "public class " + className );
+            builder.AppendLine( "{");
+
+            foreach( var packetElement in typeInfo.packetElementList )
+            {
+                var valNameTemp = packetElement.varName.Replace("m_", String.Empty);
+                var publicVale = Utils.UpperFirstChar(valNameTemp);
+                //builder.AppendLine( "" );
+                builder.AppendLine( "    /// <summary> " + packetElement.desc + " </summary>" );
+
+                if ( packetElement.dataType == EDataType.Unique )
+                    builder.AppendLine( "    [ JsonConverter( typeof( StringEnumConverter ) ) ]" );
+
+                //builder.AppendLine( "    private " + Utils.ConvertDataTypeToString( packetElement.dataType, packetElement.uniqueDataType ) + " " + packetElement.varName + ";" );
+                builder.AppendLine( "    public " + Utils.ConvertDataTypeToString( packetElement.dataType, packetElement.uniqueDataType ) + " " + publicVale + " { get; set; }" );
+                builder.AppendLine( "" );
+            }
+
+            builder.AppendLine( "" );
+            builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+            builder.AppendLine( "    /// <summary> @brief [ 생성자 ] </summary>" );
+            builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+            builder.AppendLine( "    public " + className + "()" );
+            builder.AppendLine( "    {" );
+            builder.AppendLine( "        // empty; " );
+            builder.AppendLine( "    }" );
+            builder.AppendLine( "" );
+            builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+            builder.AppendLine( "    /// <summary> @brief [ 문자열로 변환합니다.(디버깅) ] </summary>" );
+            builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+            builder.AppendLine( "    public override string ToString()" );
+            builder.AppendLine( "    {" );
+
+            string toStringValue = "return $\"";
+
+            foreach ( var packetElement in typeInfo.packetElementList )
+            {
+                var valNameTemp = packetElement.varName.Replace("m_", String.Empty);
+                var publicVale = Utils.UpperFirstChar(valNameTemp);
+                toStringValue += ( publicVale + " : {" + publicVale + "}," );
+            }
+            toStringValue += "\";";
+
+            builder.AppendLine( "        " + toStringValue );
+            builder.AppendLine( "    }" );
+            builder.AppendLine( "}" );
+
+            //폴더 있는지 유무 확인 후 생성
+            string directoryPath = path;
+
+            DirectoryInfo directoryInfo = new DirectoryInfo( directoryPath );
+            if ( !directoryInfo.Exists )
+                directoryInfo.Create();
+
+            File.WriteAllText( fullFilePath, builder.ToString() );
+        }
+     
+    }
 }
 
 
@@ -1152,12 +1422,27 @@ public class PacketInfo
     public List<PacketElementInfo> packetElementList;
 }
 
+public class PacketTypeInfo
+{
+    /// 패킷 네이밍
+    public string packetName;
+
+    /// 패킷 디스크립션 
+    public string packetDesc;
+
+    /// 패킷 원소 정보 리스트
+    public List<PacketElementInfo> packetElementList;
+}
+
 // 나중에 분리.
 public class PacketElementInfo
 {
     /// 데이터 타입
     public EDataType dataType;
-    
+
+    /// 유니크 데이터 타입
+    public string uniqueDataType;
+
     /// 변수 이름
     public string varName;
 

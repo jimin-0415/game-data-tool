@@ -196,6 +196,7 @@ public class ManagerTemplateScriptConvertor : IConvertor
         builder.AppendLine( "using UnityEngine;" );
         builder.AppendLine( "using Newtonsoft.Json;" );
         builder.AppendLine( "using Newtonsoft.Json.Converters;" );
+        builder.AppendLine( "using System.Collections.Generic;" );
         builder.AppendLine( "" );
         builder.AppendLine( "" );
         builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
