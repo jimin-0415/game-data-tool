@@ -7,11 +7,15 @@ class Program
 { 
     static void Main(string[] args)
     {
-        /*var pivot = new DateTime(2024, 10, 29);
+        var pivot = new DateTime(2025, 12, 31);
         var now = DateTime.Now;
 
-         if(DateTime.Compare(pivot, now) < 0)
-            return;*/
+        if ( DateTime.Compare( pivot, now ) < 0 )
+        {
+            System.Console.WriteLine("사용 기간 만료됨");
+            return;
+        }
+            
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
@@ -24,13 +28,13 @@ class Program
             convertors.Add( new ManagerTemplateScriptConvertor() );
 
             IDataLoader dataLoader = new ExcelDataLoader(
-                "../Assets/Data/", convertors);
+                "../Data/", convertors);
 
             dataLoader.Init();
             dataLoader.Load();
             dataLoader.Convert();
 
-            dataLoader = new PacketDataLoader( "../Assets/Data/" );
+            dataLoader = new PacketDataLoader( "../Data/" );
             dataLoader.Init();
             dataLoader.Load();
             dataLoader.Convert();

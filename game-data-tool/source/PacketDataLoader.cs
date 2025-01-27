@@ -940,7 +940,7 @@ public class PacketDataLoader : IDataLoader
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "    /// <summary> @brief [ 스트링으로 변환 ] </summary>" );
         builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    public abstract string ToString();" );
+        builder.AppendLine( "    public abstract override string ToString();" );
         builder.AppendLine( "}" );
         //폴더 있는지 유무 확인 후 생성
         string directoryPath = path;
