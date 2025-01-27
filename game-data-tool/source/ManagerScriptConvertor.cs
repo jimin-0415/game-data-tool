@@ -12,7 +12,7 @@ public class ManagerScriptConvertor : IConvertor
 
     public ManagerScriptConvertor()
     {
-        this.path = "../Assets/Scripts/Manager/";
+        this.path = "../../Assets/Scripts/Manager/";
     }
 
     public void Convert(string sheetName, Dictionary<string, List<string>> rootNamesMap, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)

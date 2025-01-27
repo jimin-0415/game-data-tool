@@ -10,7 +10,7 @@ class ScriptConvertor : IConvertor
 
     public ScriptConvertor()
     {
-        this.path = "../Assets/Scripts/Data/";
+        this.path = "../../Assets/Scripts/Data/";
     }
 
     public ScriptConvertor(string filePath)

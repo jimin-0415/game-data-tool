@@ -28,13 +28,13 @@ class Program
             convertors.Add( new ManagerTemplateScriptConvertor() );
 
             IDataLoader dataLoader = new ExcelDataLoader(
-                "../Data/", convertors);
+                "../../Data/", convertors);
 
             dataLoader.Init();
             dataLoader.Load();
             dataLoader.Convert();
 
-            dataLoader = new PacketDataLoader( "../Data/" );
+            dataLoader = new PacketDataLoader( "../../Data/" );
             dataLoader.Init();
             dataLoader.Load();
             dataLoader.Convert();

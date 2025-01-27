@@ -11,7 +11,7 @@ public class ManagerTemplateScriptConvertor : IConvertor
 
     public ManagerTemplateScriptConvertor()
     {
-        this.path = "../Assets/Scripts/Data/Info";
+        this.path = "../../Assets/Scripts/Data/Info";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
