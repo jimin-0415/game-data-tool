@@ -12,17 +12,25 @@ class JsonConvertor : IConvertor
 
     public JsonConvertor()
     {
-        this.path = "../../Assets/Resources/Json/";
+        this.path = "../../Assets/Data/Json/";
     }
 
     public JsonConvertor(string filePath)
     {
         this.path = filePath;
-        this.path = "../../";
     }
 
     public void Convert(string sheetName, Dictionary<string, List<string>> rootNamesMap, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
     {
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+            Console.WriteLine("[JsonConvertor] Create Dir = " + path);
+        }
+
+        Console.WriteLine("[JsonConvertor] path(raw)  = " + this.path);
+        Console.WriteLine("[JsonConvertor] path(full) = " + Path.GetFullPath(this.path));
+
         StringBuilder builder = new StringBuilder(1000, 50000);
         builder.AppendLine("{");
 
@@ -87,7 +95,9 @@ class JsonConvertor : IConvertor
         builder.AppendLine("    ]");
         builder.Append("}");
 
-        File.WriteAllText(fullFilePath, builder.ToString());   
+        File.WriteAllText(fullFilePath, builder.ToString());
+
+        Console.WriteLine("[JsonConvertor] Create Json = " + fullFilePath);
     }
 }
 

@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using ExcelDataReader;
 
 class ExcelDataLoader : IDataLoader
@@ -14,9 +7,11 @@ class ExcelDataLoader : IDataLoader
     //Conver Data Path
     string dataPath;
 
+    string managerPath;
+
     Stopwatch timer;
 
-    // key : rootName, value : List<sheetName>
+    // key : rootName, value : List< sheetName >
     Dictionary<string, List<string>> rootNamesMap;
 
     // key : sheetName, key : columIndex, columInfo
@@ -35,14 +30,15 @@ class ExcelDataLoader : IDataLoader
     string curRootName;
 
 
-    public ExcelDataLoader( string dataPath, List< IConvertor > convertorList = null )
+    public ExcelDataLoader( string dataPath, string managerPath, List< IConvertor > convertorList = null )
     {
         this.dataPath = dataPath;
+        this.managerPath = managerPath;
 
         this.columnInfosMap = new Dictionary<string, Dictionary<int, ColumnInfo>>();
-        this.rowDatasMap = new Dictionary<string, Dictionary<int, List<string>>>();
-        this.rootNamesMap = new Dictionary<string, List<string>>();
-        this.timer = new Stopwatch();
+        this.rowDatasMap    = new Dictionary<string, Dictionary<int, List<string>>>();
+        this.rootNamesMap   = new Dictionary<string, List<string>>();
+        this.timer          = new Stopwatch();
 
         if (convertorList != null)
             convertors = convertorList;
@@ -108,7 +104,7 @@ class ExcelDataLoader : IDataLoader
     /// 다른 데이터 형식으로 변환 시킨다 
     public virtual void Convert()
     {
-        ManagerScriptConvertor msc = new ManagerScriptConvertor();
+        ManagerScriptConvertor msc = new ManagerScriptConvertor(managerPath);
         msc.Convert(rootNamesMap, ManagerClassType.AbstractClass );
 
         foreach(var colunmInfo in columnInfosMap)

@@ -15,8 +15,7 @@ class ScriptConvertor : IConvertor
 
     public ScriptConvertor(string filePath)
     {
-        /*this.path = filePath;
-        this.path = "../../";*/
+        this.path = filePath;
     }
 
     public void Convert(string sheetName, Dictionary<string, List<string>> rootNamesMap, Dictionary<int, ColumnInfo> columnInfos, Dictionary<int, List<string>> rowDatas)
@@ -67,14 +66,9 @@ class ScriptConvertor : IConvertor
         builder.AppendLine( "using System.Collections.Generic;" );
         builder.AppendLine( "");
         builder.AppendLine( "");
-        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "/// <summary>" );
-        builder.AppendLine( "///" );
-        builder.AppendLine( "/// @class    [" + sheetName + "Data ]" );
-        builder.AppendLine( "/// @brief    [" + sheetName + "Data class ]" );
-        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @class: " + sheetName + "Data" );
         builder.AppendLine( "/// </summary>" );
-        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine("[System.Serializable]");
         builder.AppendLine("public class " + sheetName + "Data");
         builder.AppendLine("{");
@@ -96,7 +90,7 @@ class ScriptConvertor : IConvertor
         builder.Append("}");
 
         //폴더 있는지 유무 확인 후 생성
-        string directoryPath = this.path + "/Data/" + rootName;
+        string directoryPath = this.path + "/Gen/" + rootName;
         
         DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
         if (!directoryInfo.Exists)
@@ -129,40 +123,27 @@ class ScriptConvertor : IConvertor
         builder.AppendLine( "using System.Collections.Generic;" );
         builder.AppendLine( "" );
         builder.AppendLine( "" );
-        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "/// <summary>" );
-        builder.AppendLine( "///" );
-        builder.AppendLine( "/// @class    [" + sheetName + "InfoTemplate ]" );
-        builder.AppendLine( "/// @brief    [" + sheetName + "InfoTemplate class ]" );
-        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @class: " + sheetName + "InfoTemplate" );
         builder.AppendLine( "/// </summary>" );
-        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "public abstract class " + sheetName + "InfoTemplate" );
         builder.AppendLine( "{" );
         builder.AppendLine( "    /// <summary> 원본 데이터 </summary>" );
-        builder.AppendLine( "    private " + sheetName + "Data m_data;"  );
+        builder.AppendLine( "    private " + sheetName + "Data _data;"  );
         builder.AppendLine( "" );
-        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    /// <summary> @brief [ 로드 합니다. ] </summary>" );
-        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "    /// 로드 합니다." );
         builder.AppendLine( "    public void Load( " + sheetName + "Data data )" );
         builder.AppendLine( "    {" );
-        builder.AppendLine( "        m_data = data;" );
+        builder.AppendLine( "        _data = data;" );
         builder.AppendLine( "    }" );
         builder.AppendLine( "" );
-        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    /// <summary> @brief [ 초기화를 진행합니다. ] </summary>" );
-        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "    /// 첫번째 초기화를 진행합니다." );
         builder.AppendLine( "    public virtual void Initialize01() { }" );
         builder.AppendLine( "" );
-        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    /// <summary> @brief [ 초기화를 진행합니다. ] </summary>" );
-        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "    /// 두번째 초기화를 진행합니다." );
         builder.AppendLine( "    public virtual void Initialize02() { }" );
         builder.AppendLine( "" );
-        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    /// <summary> @brief [ 초기화를 진행합니다. ] </summary>" );
-        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "    /// 세번째 초기화를 진행합니다." );
         builder.AppendLine( "    public virtual void Initialize03() { }" );
         builder.AppendLine( "" );
         {
@@ -180,7 +161,7 @@ class ScriptConvertor : IConvertor
         builder.AppendLine( "}" );
 
         //폴더 있는지 유무 확인 후 생성
-        string directoryPath = this.path + "/Info/" + rootName;
+        string directoryPath = this.path + "/Gen/" + rootName;
 
         DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
         if ( !directoryInfo.Exists )
@@ -212,20 +193,13 @@ class ScriptConvertor : IConvertor
         builder.AppendLine( "using System.Collections.Generic;" );
         builder.AppendLine( "" );
         builder.AppendLine( "" );
-        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "/// <summary>" );
-        builder.AppendLine( "///" );
-        builder.AppendLine( "/// @class    [" + sheetName + "Info ]" );
-        builder.AppendLine( "/// @brief    [" + sheetName + "Info class ]" );
-        builder.AppendLine( "/// @date     [" + DateTime.Now.ToString( "yyyy.MM.dd" ) + "]" );
-        builder.AppendLine( "///" );
+        builder.AppendLine( "/// @class: " + sheetName + "Info" );
+        builder.AppendLine( "/// @date : " + DateTime.Now.ToString( "yyyy.MM.dd" ) );
         builder.AppendLine( "/// </summary>" );
-        builder.AppendLine( "////////////////////////////////////////////////////////////////////////////////////////////////////" );
         builder.AppendLine( "public class " + sheetName + "Info : " + sheetName +"InfoTemplate" );
         builder.AppendLine( "{" );
-        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
-        builder.AppendLine( "    /// <summary> @brief [ 초기화를 진행합니다. ] </summary>" );
-        builder.AppendLine( "    ////////////////////////////////////////////////////////////////////////////////////////////////" );
+        builder.AppendLine( "    /// 초기화를 진행합니다." );
         builder.AppendLine( "    public override void Initialize01()" );
         builder.AppendLine( "    {" );
         builder.AppendLine( "        base.Initialize01();" );
@@ -266,7 +240,7 @@ class ScriptConvertor : IConvertor
         foreach (var element in colums)
             result += element;
 
-        result += " => m_data." + columName + ";";
+        result += " => _data." + columName + ";";
 
         return result;
     }
