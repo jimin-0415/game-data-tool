@@ -75,9 +75,7 @@ public class ManagerTemplateScriptConvertor : IConvertor
 
         //LowerFirstCharacter
 
-        builder.AppendLine( "using UnityEngine;" );
-        builder.AppendLine( "using Newtonsoft.Json;" );
-        builder.AppendLine( "using Newtonsoft.Json.Converters;" );
+        builder.AppendLine( "using System.Threading.Tasks;");
         builder.AppendLine( "using System.Collections.Generic;" );
         builder.AppendLine( "" );
         builder.AppendLine( "" );
@@ -92,7 +90,7 @@ public class ManagerTemplateScriptConvertor : IConvertor
         builder.AppendLine( " ");
         
         builder.AppendLine( "    /// 로드 합니다." );
-        builder.AppendLine( "    public async void Load()" );
+        builder.AppendLine( "    public async Task Load()" );
         builder.AppendLine( "    {" );
         builder.AppendLine( "        List< " + sheetDataName + " > datas = await DataManager.LoadJsonData<" + sheetDataName + ">(\"Assets/Data/Json/"+ sheetDataName + ".json\");" );
         builder.AppendLine( "        foreach ( var data in datas )" );

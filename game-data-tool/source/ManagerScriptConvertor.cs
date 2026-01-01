@@ -162,9 +162,12 @@ public class ManagerScriptConvertor : IConvertor
         
         // >Generate Load Func Start
         {
+            builder.AppendLine("    private List< Task > _dataLoadTask = new List< Task >();");
+            builder.AppendLine("");
             builder.AppendLine( "    /// 로드 합니다." );
-            builder.AppendLine( "    public virtual void Load()" );
+            builder.AppendLine( "    public async Task Load()" );
             builder.AppendLine( "    {" );
+            builder.AppendLine("         _dataLoadTask.Clear();");
         }
 
         foreach (var sheetList in rootNamesMap)
@@ -173,7 +176,7 @@ public class ManagerScriptConvertor : IConvertor
             {
                 string managerClassName = excelSheetName + "InfoManager";
                 string managerVarName = Utils.UpperFirstChar( managerClassName );
-                builder.AppendLine( "        " + managerVarName + ".Instance.Load();" );
+                builder.AppendLine("        _dataLoadTask.Add(" + managerVarName + ".Instance.Load());" );
             }
         }
 
@@ -185,13 +188,16 @@ public class ManagerScriptConvertor : IConvertor
         //}
 
         {
+            builder.AppendLine("    await Task.WhenAll(_dataLoadTask);");
+            builder.AppendLine("    Debug.Log(\"모든 데이터 로드 완료!\");");
+            builder.AppendLine("    Initialize();");
             builder.AppendLine("    }");
             builder.AppendLine("    ");
         }
 
         // >Generate Init();
         builder.AppendLine( "    /// 초기화 합니다." );
-        builder.AppendLine( "    public void Initialize()" );
+        builder.AppendLine( "    private void Initialize()" );
         builder.AppendLine( "    {" );
 
         foreach ( var sheetList in rootNamesMap )
